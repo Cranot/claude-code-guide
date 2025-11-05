@@ -2190,6 +2190,249 @@ You can reference MCP tools in hooks:
 
 **Source:** [MCP Documentation](https://docs.claude.com/en/docs/claude-code/mcp), [Settings](https://docs.claude.com/en/docs/claude-code/settings)
 
+### MCP Setup Examples [OFFICIAL]
+
+**Quick-start configurations for popular MCP servers.**
+
+#### GitHub Integration
+
+```bash
+# Installation
+claude mcp add --transport stdio github -- npx -y @modelcontextprotocol/server-github
+
+# Or via .mcp.json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+**Common operations:** Create issues, manage PRs, search code, review repositories.
+
+#### Slack Integration
+
+```bash
+# Installation
+claude mcp add --transport stdio slack -- npx -y @modelcontextprotocol/server-slack
+
+# Configuration
+{
+  "mcpServers": {
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
+        "SLACK_TEAM_ID": "T01234567"
+      }
+    }
+  }
+}
+```
+
+**Usage:** `> "Search Slack for conversations about API redesign"`
+
+#### Google Drive Integration
+
+```bash
+# Installation with OAuth
+claude mcp add --transport http gdrive https://mcp.google.com/drive
+
+# Or stdio with credentials
+{
+  "mcpServers": {
+    "gdrive": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-gdrive"],
+      "env": {
+        "GDRIVE_CREDENTIALS_PATH": "${HOME}/.gdrive-credentials.json"
+      }
+    }
+  }
+}
+```
+
+**Authenticate:** Run `/mcp` in Claude Code and follow OAuth flow.
+
+#### PostgreSQL Database
+
+```bash
+# Installation
+claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server-postgres postgresql://user:pass@localhost/db
+
+# Configuration
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "${DATABASE_URL}"
+      ]
+    }
+  }
+}
+```
+
+**Usage:** `> "Show all users created in the last week from the database"`
+
+#### Notion Integration
+
+```bash
+# Installation
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+
+# Requires Notion OAuth - authenticate via /mcp command
+```
+
+**Common operations:** Query databases, create pages, search workspace.
+
+#### Stripe Payment Integration
+
+```bash
+# Configuration
+{
+  "mcpServers": {
+    "stripe": {
+      "command": "npx",
+      "args": ["-y", "@stripe/mcp-server"],
+      "env": {
+        "STRIPE_API_KEY": "${STRIPE_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+**Usage:** `> "List recent Stripe transactions and summarize revenue"`
+
+### MCP Troubleshooting [COMMUNITY]
+
+**Common issues and solutions from GitHub issues and production usage.**
+
+#### Issue: MCP Server Not Showing in List
+
+```bash
+# Problem
+claude mcp list
+# Output: "No MCP servers configured"
+
+# Solutions
+1. Check file location:
+   - User scope: ~/.claude/settings.json
+   - Project scope: .mcp.json (in project root)
+
+2. Verify JSON syntax:
+   cat .mcp.json | jq .
+
+3. Check scope setting:
+   claude mcp add --scope project <name> ...
+
+4. Restart Claude Code after config changes
+```
+
+#### Issue: Tools Not Available Despite "Connected"
+
+```bash
+# Problem
+/mcp shows "✓ Connected" but tools don't appear
+
+# Solutions
+1. Check tool output size (max 25,000 tokens):
+   export MAX_MCP_OUTPUT_TOKENS=50000
+
+2. Verify server actually started:
+   ps aux | grep mcp
+
+3. Check debug logs:
+   claude --debug
+   tail -f ~/.claude/logs/claude.log
+
+4. Reset project approvals:
+   claude mcp reset-project-choices
+```
+
+#### Issue: OAuth Authentication Fails
+
+```bash
+# Problem
+Browser opens but OAuth fails or doesn't complete
+
+# Solutions
+1. Use /mcp command (not direct URL)
+
+2. Check network/proxy settings:
+   # Try without VPN/Cloudflare Warp
+
+3. Clear OAuth cache:
+   rm -rf ~/.claude/oauth-cache
+
+4. Verify redirect URI in provider settings
+```
+
+#### Issue: Windows "Connection Closed" Error
+
+```bash
+# Problem
+MCP server immediately closes on Windows
+
+# Solution - Use cmd /c wrapper:
+claude mcp add --transport stdio myserver -- cmd /c npx -y package-name
+
+# In .mcp.json:
+{
+  "mcpServers": {
+    "myserver": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "package-name"]
+    }
+  }
+}
+```
+
+#### Issue: Environment Variables Not Expanding
+
+```bash
+# Problem
+${VAR} shows literally instead of expanding
+
+# Solutions
+1. Check .env file exists and is loaded
+
+2. Use default syntax:
+   "${API_KEY:-default_value}"
+
+3. Set in shell before running:
+   export API_KEY=xxx && claude
+
+4. Use settings.local.json for sensitive values
+```
+
+#### Issue: MCP Server Process Crashes
+
+```bash
+# Debug steps:
+1. Test server directly:
+   npx @modelcontextprotocol/server-github
+
+2. Check stdout/stderr:
+   claude --debug | grep mcp
+
+3. Verify dependencies installed:
+   npm list -g | grep mcp
+
+4. Check memory/resource limits:
+   ulimit -a
+```
+
 ---
 
 ## 🤖 Sub-Agents [OFFICIAL]
@@ -3237,6 +3480,137 @@ TodoWrite todos=[
 
 # Reinstall
 > "Reinstall the MCP server package"
+```
+
+### Error Recovery Patterns [COMMUNITY]
+
+**Systematic approaches to common error scenarios.**
+
+#### Session Recovery After Disconnect
+
+```bash
+# If session disconnects mid-task:
+1. Check recent history:
+   > "What was I working on?"
+
+2. Review file changes:
+   git diff
+
+3. Reconstruct state:
+   > "Based on recent changes, continue where we left off"
+```
+
+#### Hook Failures
+
+```bash
+# If hook blocks unexpectedly:
+1. Check hook output:
+   claude --debug
+
+2. Test hook manually:
+   echo '{"tool_name":"Edit","tool_input":{...}}' | ~/.claude/hooks/script.sh
+
+3. Temporarily disable:
+   mv ~/.claude/settings.json ~/.claude/settings.json.bak
+
+4. Fix and restore:
+   # Fix the hook script, then restore settings
+```
+
+#### Context Overflow Mid-Task
+
+```bash
+# When "context too large" appears during complex work:
+
+# Quick recovery:
+> /microcompact
+> "Continue with [brief task summary]"
+
+# Full reset if needed:
+> /compact
+> "Let me brief you: [key context]"
+
+# Prevention:
+- Use /microcompact every ~50 operations
+- Start fresh sessions for new features
+```
+
+#### Tool Permission Issues
+
+```bash
+# When permissions repeatedly requested:
+
+# Grant permanently:
+{
+  "permissions": {
+    "allow": {
+      "Bash": {},      # Allow all bash
+      "Edit": {},      # Allow all edits
+      "Write": {}      # Allow all writes
+    }
+  }
+}
+
+# Or specific patterns:
+{
+  "permissions": {
+    "allow": {
+      "Bash": ["npm test", "npm run build"]
+    }
+  }
+}
+```
+
+#### Network/API Timeouts
+
+```bash
+# If operations timeout:
+
+# Retry with backoff:
+1st attempt → fails
+Wait 2s → retry
+Wait 4s → retry
+Wait 8s → retry
+
+# Switch model if persistent:
+> "Use a different model to try this"
+
+# Check network:
+ping anthropic.com
+curl -v https://api.anthropic.com
+```
+
+#### Lost Work Recovery
+
+```bash
+# If changes weren't saved:
+
+1. Check git:
+   git status
+   git diff
+
+2. Check file backups:
+   ls -la ~/.claude/backups/
+
+3. Review session transcript:
+   # Transcripts saved in ~/.claude/transcripts/
+
+4. Reconstruct from memory:
+   > "Based on our conversation, recreate the [feature]"
+```
+
+#### Debug Mode for Persistent Issues
+
+```bash
+# Enable comprehensive debugging:
+claude --debug --log-level trace
+
+# Follow logs in real-time:
+tail -f ~/.claude/logs/claude.log
+
+# Filter for specific issues:
+grep -i error ~/.claude/logs/claude.log
+grep -i "mcp" ~/.claude/logs/claude.log
 ```
 
 ---
