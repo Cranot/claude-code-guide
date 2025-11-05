@@ -89,6 +89,50 @@ claude --resume <id>      # Resume specific session
 
 **Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
 
+### CLI Flags Reference [OFFICIAL]
+
+```bash
+# Output Control
+claude -p, --print "task"          # Print mode: non-interactive, prints result and exits
+claude --output-format json         # Output format: json, markdown, or text
+claude --no-color                   # Disable colored output
+
+# Session Management
+claude --continue                   # Continue from last session
+claude --resume <session-id>        # Resume specific session by ID
+claude --list-sessions              # List all available sessions
+
+# Debugging & Logging
+claude --debug                      # Enable debug mode with verbose logging
+claude --log-level <level>          # Set log level: error, warn, info, debug, trace
+
+# Model & Configuration
+claude --model <model-name>         # Specify model to use
+claude --config <path>              # Use custom config file
+
+# Sandboxing (macOS/Linux)
+claude --sandbox                    # Enable sandbox mode for security
+claude --no-sandbox                 # Disable sandbox mode
+```
+
+**Common Flag Combinations:**
+
+```bash
+# One-off task with JSON output
+claude --print "analyze this code" --output-format json
+
+# Debug session with custom config
+claude --debug --config .claude/custom-settings.json
+
+# Resume session with specific model
+claude --resume abc123 --model claude-opus-4
+
+# Non-interactive with no color (CI/CD)
+claude --print "run tests" --no-color --output-format json
+```
+
+**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+
 ### Core Tools [OFFICIAL]
 
 | Tool | Purpose | Permission Required |
@@ -546,6 +590,67 @@ Claude Code may automatically compact when:
 
 **Source:** [Settings](https://docs.claude.com/en/docs/claude-code/settings)
 
+### 6. Workspace Management [OFFICIAL]
+
+#### Adding Directories with /add-dir
+
+Claude Code can work with multiple directories simultaneously:
+
+```bash
+# Add another directory to current session
+/add-dir /path/to/other/project
+
+# Work across multiple projects
+> "Update the User type in backend and propagate to frontend"
+# Claude can now access both directories
+```
+
+**Use Cases:**
+- Monorepo development (frontend + backend + shared libs)
+- Cross-project refactoring
+- Dependency updates across multiple projects
+- Coordinating changes between related repositories
+
+**Configuration:**
+
+You can also pre-configure additional directories in `.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "additionalDirectories": [
+      "/path/to/frontend",
+      "/path/to/backend",
+      "/path/to/shared-libs"
+    ]
+  }
+}
+```
+
+#### Status Line Configuration with /statusline
+
+Customize what information appears in your status line:
+
+```bash
+# Configure status line
+/statusline
+
+# Options typically include:
+# - Current model
+# - Token usage
+# - Session duration
+# - Active tools
+# - Background processes
+```
+
+**Benefits:**
+- Monitor token usage in real-time
+- Track session duration
+- See active background processes
+- Understand which tools are being used
+
+**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+
 ---
 
 ## 🚀 Quick Start Guide
@@ -991,6 +1096,10 @@ Structure your SKILL.md:
 
 # Configuration
 /status            # Show session status
+/statusline        # Configure status line display
+
+# Workspace Management
+/add-dir <path>    # Add additional directory to workspace
 ```
 
 ### Creating Custom Commands [OFFICIAL]
@@ -1201,13 +1310,51 @@ Include:
 /analyze-file "src/services/payment.ts"
 ```
 
-#### File References
+#### File References with @ Syntax [OFFICIAL]
 
-Reference files with `@` prefix (automatically expanded):
+Reference files with `@` prefix for quick file inclusion:
 
 ```bash
-/review-code @src/auth.ts @src/api.ts
+# Reference single file
+/review-code @src/auth.ts
+
+# Reference multiple files
+/review-code @src/auth.ts @src/api.ts @tests/auth.test.ts
+
+# Works in regular prompts too
+> "Review @src/services/payment.ts for security issues"
+
+# Reference files in commands with arguments
+/analyze-file @src/components/UserProfile.tsx
 ```
+
+**How @ References Work:**
+- `@filename` automatically expands to include file content
+- Works with both absolute and relative paths
+- Can reference multiple files in one command
+- Files are read and included in context automatically
+- Reduces need to explicitly say "read file X first"
+
+**Use Cases:**
+```bash
+# Code review with context
+> "Compare @src/api/v1.ts and @src/api/v2.ts and list differences"
+
+# Refactoring across files
+> "Make @src/models/User.ts consistent with @src/types/user.d.ts"
+
+# Bug investigation
+> "This error occurs in @src/services/auth.ts, check @logs/error.log for clues"
+
+# Test generation
+> "Generate tests for @src/utils/validator.ts"
+```
+
+**Best Practices:**
+- Use @ references when you know exact file paths
+- Combine with slash commands for reusable workflows
+- Great for focused analysis of specific files
+- Reduces token usage vs. reading entire directories
 
 #### Namespacing
 
