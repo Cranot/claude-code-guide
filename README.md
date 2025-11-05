@@ -52,7 +52,6 @@ claude --version  # Verify installation
 - [Troubleshooting](#troubleshooting) - Common issues
 
 ### 📚 Advanced Topics
-- [Advanced Patterns](#advanced-patterns) - Power user techniques
 - [Security Considerations](#security-considerations) - Security model
 - [SDK Integration](#sdk-integration) - Programmatic usage
 - [Experimental Concepts](#experimental-concepts) - ⚠️ Unverified ideas
@@ -2505,6 +2504,112 @@ TodoWrite todos=[
 > "Start both dev servers and monitor for errors"
 ```
 
+### Example 7: Background Development Workflow
+
+```bash
+# Start all development services in background
+> "Start the frontend dev server in background"
+> "Start the backend API server in background"
+> "Run tests in watch mode in background"
+
+# Configure status line to track all services
+/statusline
+
+# Monitor all services simultaneously
+> "Monitor all background processes for errors"
+
+# Claude watches logs from all background tasks
+# Identifies issues across services
+# Suggests fixes without stopping services
+
+# Fix issues dynamically
+> "I see an API timeout error"
+# Claude checks backend logs, identifies cause, suggests solution
+
+# Check all background tasks
+/bashes
+
+# Stop specific service if needed
+/kill <id>
+```
+
+### Example 8: Smart Context Management
+
+```bash
+# Start major feature development
+> "Build a complete user authentication system with JWT, refresh tokens, and password reset"
+
+# Work progresses, context accumulates...
+# After reading many files and multiple operations
+# Context is getting large
+
+# Use microcompact for intelligent cleanup
+/microcompact
+# Keeps: Current auth work, recent changes, patterns learned
+# Removes: Old file reads, completed searches, stale context
+
+# Continue seamlessly with clean context
+> "Add two-factor authentication to the system"
+# Full context available for current authentication work
+
+# Major context switch to new feature
+/compact
+# Complete reset for fresh start
+
+> "Implement Stripe payment integration"
+# Clean slate for payment feature
+```
+
+### Example 9: Security-First Development
+
+```bash
+# Plan with security considerations
+> "Design a user input handling system for our forms. Focus on security best practices"
+
+# Implement with immediate security review
+> "Implement the form validation system"
+> "Review the form validation code for security vulnerabilities"
+
+# Fix identified issues
+> "Fix the XSS vulnerability in the email field validation"
+> "Verify the fix addresses all injection vectors"
+
+# Document security patterns
+> "Update CLAUDE.md with our input validation security patterns"
+
+# Set up continuous security monitoring
+> "Create a GitHub Action that runs security scans on every PR"
+```
+
+### Example 10: Full-Stack Multi-Repo Development
+
+```bash
+# Initialize multi-repo workspace
+/add-dir ~/projects/backend
+/add-dir ~/projects/frontend
+/add-dir ~/projects/shared-types
+
+# Synchronize type definitions across projects
+> "Update the User type in shared-types and ensure backend and frontend are consistent"
+
+# Parallel type checking
+> "Run TypeScript type checking in all three projects simultaneously in background"
+
+# Monitor and fix type errors
+> "Check background tasks for any type errors"
+> "Fix type mismatches found in frontend"
+
+# Cross-repo validation
+> "Verify that all API types in backend match the frontend client expectations"
+
+# Start all dev servers
+> "Start backend server, frontend server, and type watching in background"
+
+# Unified development experience
+> "Build the checkout flow, coordinating changes across backend API and frontend UI"
+# Claude makes coordinated changes across all repos
+```
+
 ---
 
 ## ✅ Best Practices
@@ -3034,11 +3139,56 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 ## 📜 Changelog
 
+### Claude Code CLI Releases [OFFICIAL]
+
+For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
+
+**Version 2.0.33** (Latest)
+- ⚡ Native binary installations now start faster
+- 🔧 Fixed `claude doctor` command symlink resolution for Homebrew vs npm-global setups
+- 🛠️ Fixed `claude mcp serve` exposing tools with incompatible output schemas
+
+**Version 2.0.32**
+- 🎨 Output styles restored after community feedback (previously deprecated in 2.0.30)
+- 📢 New `companyAnnouncements` setting for displaying startup messages
+- 🔧 Fixed hook progress messages not updating during PostToolUse hook execution
+
+**Version 2.0.31**
+- ⌨️ **Windows**: Mode-switching shortcut changed to `Shift+Tab` (was `Alt+M`) for native installations
+- 🔍 **Vertex**: Added Web Search support for compatible models
+- 📁 **VSCode**: New `respectGitIgnore` configuration (default: true) to include .gitignored files in searches
+- 🐛 Fixed "Tool names must be unique" error affecting subagents and MCP servers
+- 🐛 Fixed `/compact` command failures with `prompt_too_long` error
+- 🐛 Fixed plugin uninstall not removing plugins
+
+**Version 2.0.30**
+- 🔐 Added macOS keychain guidance for API key errors
+- 🛡️ New `allowUnsandboxedCommands` sandbox setting to restrict unsandboxed command execution
+- 🚫 Added `disallowedTools` field for custom agent definitions
+- 🔗 Implemented prompt-based stop hooks
+- 📁 **VSCode**: Added `respectGitIgnore` configuration option
+- ⚡ Enabled SSE MCP servers on native builds
+- ⚠️ **Breaking**: Deprecated output styles (use alternative configuration methods)
+- ⚠️ **Breaking**: Removed custom ripgrep configuration support
+- 🐛 Fixed Explore agent creating unwanted .md files
+- 🐛 Fixed `/context` command errors with thinking tokens
+- 🐛 Fixed `--mcp-config` flag not overriding file-based configs
+- 🐛 Fixed MCP tools unavailable to sub-agents
+- 🐛 Multiple other bug fixes for hooks, plugins, and VSCode integration
+
+---
+
+### This Guide's Changelog
+
 **Version 2025.0 (January 2025)**
 - Complete rewrite focused on verified features
 - Clear separation of official vs. experimental content
 - Added Skills System documentation (new feature)
 - Added Plugins documentation
+- Added `/statusline` and `/add-dir` commands
+- Added CLI flags reference section
+- Enhanced `@filename` reference syntax documentation
+- Added latest Claude Code CLI release notes (v2.0.30-2.0.33)
 - Comprehensive examples and patterns
 - Removed unverified content from main sections
 - All claims verified against official docs
