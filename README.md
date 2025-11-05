@@ -1627,7 +1627,394 @@ echo '{"tool_name":"Edit","tool_input":{"file_path":".env"}}' | bash your-hook-s
 tail -f ~/.claude/logs/claude.log
 ```
 
-**Source:** [Hooks Reference](https://docs.claude.com/en/docs/claude-code/hooks), [Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks-guide)
+### Hook Recipes Library [OFFICIAL + COMMUNITY]
+
+**Comprehensive collection of production-ready hook patterns for common automation needs.**
+
+#### 1. Auto-Format Code on Save [COMMUNITY]
+
+Automatically formats code after Claude edits files using language-appropriate formatters.
+
+**Configuration (`.claude/settings.json`):**
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/format-code.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Script (`~/.claude/hooks/format-code.sh`):**
+```bash
+#!/bin/bash
+# Extract file path from JSON input
+FILE=$(echo "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty')
+
+[[ -z "$FILE" ]] && exit 0
+
+# Format based on extension
+case "$FILE" in
+  *.ts|*.tsx|*.js|*.jsx)
+    # Try Biome first, fall back to Prettier
+    if command -v biome &> /dev/null; then
+      biome format --write "$FILE" &> /dev/null || true
+    elif command -v prettier &> /dev/null; then
+      prettier --write "$FILE" &> /dev/null || true
+    fi
+    ;;
+  *.py)
+    # Python: Ruff
+    if command -v ruff &> /dev/null; then
+      ruff format "$FILE" &> /dev/null || true
+    fi
+    ;;
+  *.go)
+    # Go: goimports + gofmt
+    if command -v goimports &> /dev/null; then
+      goimports -w "$FILE" &> /dev/null || true
+    fi
+    go fmt "$FILE" &> /dev/null || true
+    ;;
+  *.md)
+    # Markdown: Prettier
+    if command -v prettier &> /dev/null; then
+      prettier --write "$FILE" &> /dev/null || true
+    fi
+    ;;
+esac
+```
+
+**Make executable:** `chmod +x ~/.claude/hooks/format-code.sh`
+
+---
+
+#### 2. ESLint Auto-Fix on Edit [COMMUNITY]
+
+Automatically runs ESLint with `--fix` on JavaScript/TypeScript files.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$HOOK_INPUT\" | jq -r \".tool_input.file_path // empty\"); if [[ \"$FILE\" =~ \\.(ts|tsx|js|jsx)$ ]] && command -v eslint &>/dev/null; then eslint --fix \"$FILE\" &>/dev/null || true; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### 3. Block .gitignore Reads [COMMUNITY]
+
+Prevents Claude from reading files matching `.claudeignore` patterns.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-ignore"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Installation:** `npm install -g claude-ignore && claude-ignore init`
+
+---
+
+#### 4. Run Tests Before Commits [COMMUNITY]
+
+Validates that tests pass before allowing git commits.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pre-commit-test.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Script (`~/.claude/hooks/pre-commit-test.sh`):**
+```bash
+#!/bin/bash
+COMMAND=$(echo "$HOOK_INPUT" | jq -r '.tool_input.command // empty')
+
+# Only intercept git commit commands
+if [[ "$COMMAND" == git*commit* ]]; then
+  echo "Running tests before commit..." >&2
+
+  # Run tests
+  if npm test &>/dev/null; then
+    echo "✅ Tests passed" >&2
+    exit 0
+  else
+    echo "❌ Tests failed - blocking commit" >&2
+    exit 2
+  fi
+fi
+
+exit 0
+```
+
+---
+
+#### 5. Audit Logging Hook [COMMUNITY]
+
+Logs all tool usage for security auditing.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"$(date -Iseconds) $TOOL_NAME: $(echo \\\"$HOOK_INPUT\\\" | jq -c .)\" >> ~/.claude/audit.log'"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### 6. Token Usage Tracker [COMMUNITY]
+
+Monitors and logs token usage per session.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/log-session.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Script:**
+```bash
+#!/bin/bash
+SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // "unknown"')
+TRANSCRIPT=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty')
+
+if [[ -f "$TRANSCRIPT" ]]; then
+  TOKENS=$(jq '[.[] | select(.role=="assistant") | .usage.total_tokens] | add' "$TRANSCRIPT" 2>/dev/null || echo 0)
+  echo "$(date -Iseconds) Session $SESSION_ID: $TOKENS tokens" >> ~/.claude/token-usage.log
+fi
+```
+
+---
+
+#### 7. Commit Message Validation [COMMUNITY]
+
+Enforces conventional commit message format.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/validate-commit.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Script:**
+```bash
+#!/bin/bash
+COMMAND=$(echo "$HOOK_INPUT" | jq -r '.tool_input.command // empty')
+
+if [[ "$COMMAND" == git*commit*-m* ]]; then
+  MSG=$(echo "$COMMAND" | sed -n 's/.*-m[[:space:]]*["'"'"']\([^"'"'"']*\)["'"'"'].*/\1/p')
+
+  # Check conventional commit format: type(scope): message
+  if [[ ! "$MSG" =~ ^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: ]]; then
+    echo "❌ Commit message must follow format: type(scope): message" >&2
+    echo "Valid types: feat, fix, docs, style, refactor, test, chore" >&2
+    exit 2
+  fi
+fi
+
+exit 0
+```
+
+---
+
+#### 8. Security Secret Scanner [COMMUNITY]
+
+Prevents committing files containing potential secrets.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/detect-secrets.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Script:**
+```bash
+#!/bin/bash
+FILE=$(echo "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty')
+NEW_CONTENT=$(echo "$HOOK_INPUT" | jq -r '.tool_input.new_string // .tool_input.content // empty')
+
+# Check for common secret patterns
+if echo "$NEW_CONTENT" | grep -iE '(api[_-]?key|password|secret|token|auth)["\s:=]+\S{16,}' &>/dev/null; then
+  echo "⚠️  Potential secret detected in $FILE" >&2
+  echo "Please review and use environment variables instead" >&2
+  exit 2
+fi
+
+exit 0
+```
+
+---
+
+#### 9. Auto-Documentation Update [COMMUNITY]
+
+Updates README when code changes are made.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"📝 Consider updating documentation for recent changes\" >&2'"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### 10. Performance Profiling [COMMUNITY]
+
+Tracks execution time of tool operations.
+
+**Configuration:**
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"$HOOK_INPUT\" > /tmp/claude-pre-$$.json; date +%s%N > /tmp/claude-time-$$.txt'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/profile-tool.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Script:**
+```bash
+#!/bin/bash
+START=$(cat /tmp/claude-time-$$.txt 2>/dev/null || echo 0)
+END=$(date +%s%N)
+DURATION=$(( (END - START) / 1000000 ))  # milliseconds
+TOOL=$(echo "$HOOK_INPUT" | jq -r '.tool_name // "unknown"')
+
+echo "$(date -Iseconds) $TOOL: ${DURATION}ms" >> ~/.claude/performance.log
+
+rm -f /tmp/claude-pre-$$.json /tmp/claude-time-$$.txt
+```
+
+---
+
+**Source:** [Hooks Reference](https://docs.claude.com/en/docs/claude-code/hooks), [Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks-guide), Community GitHub repositories
 
 ---
 
