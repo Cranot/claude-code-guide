@@ -1,10 +1,12 @@
 # The Complete Claude Code CLI Guide
 
-[![Official Docs](https://img.shields.io/badge/Docs-docs.claude.com-blue)](https://docs.claude.com/en/docs/claude-code/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![Version](https://img.shields.io/badge/Guide-2026-green)](#) [![Auto-Updated](https://img.shields.io/badge/Auto--Updated-Every%202%20Days-brightgreen)](#auto-update-pipeline)
+[![Official Docs](https://img.shields.io/badge/Official_Docs-docs.claude.com-blue)](https://docs.claude.com/en/docs/claude-code/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![NPM](https://img.shields.io/badge/NPM-@anthropic--ai%2Fclaude--code-red)](https://www.npmjs.com/package/@anthropic-ai/claude-code) [![Auto-Updated](https://img.shields.io/badge/Auto--Updated-Every%202%20Days-brightgreen)](#auto-update-pipeline)
 
-> **Live Guide**: This guide is automatically updated every 2 days by Claude Code, checking official Anthropic documentation, GitHub releases, and changelogs for new features and changes. Last pipeline run is logged in [update-log.md](./update-log.md).
+**Quick Links:** [Get Started](#what-is-claude-code) · [Commands](#quick-reference) · [MCP Setup](https://docs.claude.com/en/docs/claude-code/mcp) · [Settings](https://docs.claude.com/en/docs/claude-code/settings) · [SDK](https://docs.claude.com/en/docs/claude-code/sdk) · [Changelog](#changelog)
 
-> **For AI Agents**: This guide is optimized for both human developers and AI agents. All features are verified against official documentation. `[OFFICIAL]` tags indicate features from docs.claude.com. `[COMMUNITY]` tags indicate observed patterns. `[EXPERIMENTAL]` tags indicate unverified concepts.
+> **🔄 Live Guide**: Auto-updated every 2 days from [official docs](https://docs.claude.com/en/docs/claude-code/overview), [GitHub releases](https://github.com/anthropics/claude-code/releases), and [Anthropic changelog](https://www.anthropic.com/changelog). See [update-log.md](./update-log.md).
+
+> **🤖 For AI Agents**: Optimized for both humans and AI. `[OFFICIAL]` = from docs.claude.com. `[COMMUNITY]` = observed patterns. `[EXPERIMENTAL]` = unverified.
 
 ---
 
