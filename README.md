@@ -543,6 +543,54 @@ WebSearch query="React 19 new features 2024"
 
 **Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference), [Settings](https://docs.claude.com/en/docs/claude-code/settings)
 
+#### LSP Tool (Language Server Protocol) [OFFICIAL]
+**Purpose:** Get code intelligence features like go-to-definition, find references, and hover documentation.
+
+```bash
+LSP operation="goToDefinition"
+    filePath="src/utils/auth.ts"
+    line=42
+    character=15
+```
+
+**Available Operations:**
+| Operation | Description |
+|-----------|-------------|
+| `goToDefinition` | Find where a symbol is defined |
+| `findReferences` | Find all references to a symbol |
+| `hover` | Get documentation and type info for a symbol |
+| `documentSymbol` | Get all symbols in a document (functions, classes, variables) |
+| `workspaceSymbol` | Search for symbols across the entire workspace |
+| `goToImplementation` | Find implementations of an interface or abstract method |
+| `prepareCallHierarchy` | Get call hierarchy item at a position |
+| `incomingCalls` | Find all functions/methods that call the function at a position |
+| `outgoingCalls` | Find all functions/methods called by the function at a position |
+
+**Parameters:**
+- `operation` (required): The LSP operation to perform
+- `filePath` (required): Absolute or relative path to the file
+- `line` (required): Line number (1-based, as shown in editors)
+- `character` (required): Character offset (1-based, as shown in editors)
+
+**Use Cases:**
+```bash
+# Find where a function is defined
+> "Go to the definition of getUserById"
+
+# Find all usages of a function
+> "Find all references to the authenticate function"
+
+# Get documentation for a symbol
+> "What does the validateToken function do?"
+
+# Explore code structure
+> "List all symbols in the auth.ts file"
+```
+
+**Note:** LSP servers must be configured for the file type. If no server is available for a language, an error will be returned.
+
+**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+
 ### 5. Context Management [OFFICIAL]
 
 Claude Code maintains conversation context with smart management:
@@ -766,6 +814,293 @@ This configuration:
 ```
 
 **Source:** [Quickstart](https://docs.claude.com/en/docs/claude-code/quickstart), [Settings](https://docs.claude.com/en/docs/claude-code/settings)
+
+---
+
+## 🧠 Advanced Features [OFFICIAL]
+
+### Thinking Mode [OFFICIAL]
+
+Claude Code supports extended thinking for complex reasoning tasks. Opus 4.5 has thinking mode enabled by default.
+
+**Activation Methods:**
+
+```bash
+# Toggle with keyboard shortcut
+Alt+T (or Option+T on macOS)  # Toggle thinking on/off
+
+# Or use natural language
+> "think about this problem"
+> "think harder about the architecture"
+> "ultrathink about this security issue"
+
+# Tab key (sticky toggle)
+Press Tab to toggle thinking mode on/off for subsequent prompts
+```
+
+**Thinking Levels:**
+| Trigger | Thinking Budget | Use Case |
+|---------|----------------|----------|
+| `think` | Standard | General reasoning, code analysis |
+| `think harder` | Extended | Complex problems, multiple approaches |
+| `ultrathink` | Maximum | Critical decisions, deep architecture analysis |
+
+**Best Practices:**
+- Use `think harder` for debugging complex issues
+- Use `ultrathink` for architectural decisions or security reviews
+- Thinking content is visible in `Ctrl+O` transcript mode
+- Thinking mode is sticky - stays on until toggled off
+
+**Source:** [Thinking Mode](https://docs.claude.com/en/docs/claude-code/thinking-mode)
+
+### Plan Mode [OFFICIAL]
+
+Plan Mode provides structured planning with model selection for complex tasks.
+
+```bash
+# Enter plan mode
+/plan
+
+# Or Claude may suggest plan mode for complex tasks
+> "Implement a complete authentication system"
+# Claude: "This is a complex task. Would you like me to create a plan first?"
+```
+
+**Plan Mode Features:**
+- **Opus planning, Sonnet execution** - Uses stronger model for planning, faster model for implementation
+- **SonnetPlan Mode** - Sonnet planning, Haiku execution (cost-effective)
+- **Shift+Tab** - Auto-accept edits in plan mode
+- **Plan persistence** - Plans persist across `/clear`
+
+**Plan Mode Workflow:**
+1. Claude analyzes the task and creates a structured plan
+2. You review and approve or modify the plan
+3. Claude executes the plan step by step
+4. Progress is tracked with TodoWrite
+
+**Source:** [Plan Mode](https://docs.claude.com/en/docs/claude-code/plan-mode)
+
+### Background Tasks & Agents [OFFICIAL]
+
+Run commands and agents in the background while continuing to work.
+
+**Keyboard Shortcut:**
+```bash
+Ctrl+B  # Background current command or agent (unified shortcut)
+```
+
+**Background Commands:**
+```bash
+# Start command in background
+> "Run the dev server in background"
+> "Start tests in watch mode in background"
+
+# Or prefix with &
+> "& npm run dev"
+
+# View background tasks
+/tasks
+/bashes
+
+# Kill a background task
+/kill <task-id>
+```
+
+**Background Agents:**
+```bash
+# Launch agent in background
+> "Have an Explore agent analyze the codebase architecture in background"
+
+# Agents run asynchronously and notify you when complete
+# You receive wake-up messages when background agents finish
+```
+
+**Features:**
+- Real-time output streaming to status line
+- Wake-up notifications when tasks complete
+- Multiple concurrent background processes
+- Output persisted to files for large outputs
+
+**Source:** [Background Tasks](https://docs.claude.com/en/docs/claude-code/background-tasks)
+
+### Keyboard Shortcuts [OFFICIAL]
+
+**Navigation & Editing:**
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+R` | Search command history |
+| `Ctrl+O` | View transcript (shows thinking blocks) |
+| `Ctrl+G` | Edit prompt in system text editor |
+| `Ctrl+Y` | Readline-style paste (yank) |
+| `Alt+Y` | Yank-pop (cycle through kill ring) |
+| `Ctrl+B` | Background current command/agent |
+| `Ctrl+Z` | Suspend/Undo |
+
+**Model & Mode Switching:**
+| Shortcut | Action |
+|----------|--------|
+| `Alt+P` (Win/Linux) / `Option+P` (macOS) | Switch models while typing |
+| `Alt+T` (Win/Linux) / `Option+T` (macOS) | Toggle thinking mode |
+| `Tab` | Toggle thinking (sticky) / Accept suggestions |
+| `Shift+Tab` | Auto-accept edits (plan mode) / Switch modes (Windows) |
+
+**Input & Submission:**
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Submit prompt / Accept suggestion immediately |
+| `Shift+Enter` | New line (works in iTerm2, WezTerm, Ghostty, Kitty) |
+| `Tab` | Edit/accept prompt suggestion |
+| `Ctrl+T` | Toggle syntax highlighting in `/theme` |
+
+**Image & File Handling:**
+| Shortcut | Action |
+|----------|--------|
+| `Cmd+V` (macOS) / `Alt+V` (Windows) | Paste image from clipboard |
+| `Cmd+N` / `Ctrl+N` | New conversation (VSCode) |
+
+**Vim Bindings (if enabled):**
+| Shortcut | Action |
+|----------|--------|
+| `;` and `,` | Repeat last motion |
+| `y` | Yank operator |
+| `p` / `P` | Paste |
+| `Alt+B` / `Alt+F` | Word navigation |
+
+### Prompt Suggestions [OFFICIAL]
+
+Claude Code suggests prompts based on context (enabled by default).
+
+```bash
+# Claude suggests contextual prompts
+> _  # Cursor blinking
+# Suggestion appears: "Review the changes we made"
+
+# Tab to edit the suggestion
+Tab → Edit the suggestion text
+
+# Enter to submit immediately
+Enter → Submit the suggestion as-is
+```
+
+**Configuration:**
+```bash
+# Toggle in /config
+/config
+# Search for "prompt suggestions"
+# Toggle enable/disable
+```
+
+### Environment Variables [OFFICIAL]
+
+**Core Configuration:**
+| Variable | Description |
+|----------|-------------|
+| `ANTHROPIC_API_KEY` | Your API key |
+| `CLAUDE_CODE_SHELL` | Override shell detection |
+| `CLAUDE_CODE_TMPDIR` | Custom temp directory |
+| `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` | Disable background task system |
+
+**Display & UI:**
+| Variable | Description |
+|----------|-------------|
+| `CLAUDE_CODE_HIDE_ACCOUNT_INFO` | Hide account info in UI |
+
+**Bash & Commands:**
+| Variable | Description |
+|----------|-------------|
+| `BASH_DEFAULT_TIMEOUT_MS` | Default bash command timeout |
+| `BASH_MAX_TIMEOUT_MS` | Maximum allowed timeout |
+| `CLAUDE_BASH_NO_LOGIN` | Don't use login shell |
+| `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR` | Keep working directory |
+| `CLAUDE_CODE_SHELL_PREFIX` | Prefix for shell commands |
+
+**Model Configuration:**
+| Variable | Description |
+|----------|-------------|
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Override default Sonnet model |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Override default Opus model |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Override default Haiku model |
+| `ANTHROPIC_LOG` | Enable debug logging |
+
+**MCP Configuration:**
+| Variable | Description |
+|----------|-------------|
+| `MCP_TIMEOUT` | MCP connection timeout |
+| `MCP_TOOL_TIMEOUT` | Individual tool timeout |
+
+**File & Context:**
+| Variable | Description |
+|----------|-------------|
+| `CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS` | Max tokens for file reads |
+| `CLAUDE_PROJECT_DIR` | Override project directory |
+| `CLAUDE_PLUGIN_ROOT` | Plugin root substitution |
+| `CLAUDE_CONFIG_DIR` | Custom config directory |
+| `XDG_CONFIG_HOME` | XDG config base path |
+
+**Network & Proxy:**
+| Variable | Description |
+|----------|-------------|
+| `NODE_EXTRA_CA_CERTS` | Custom CA certificates |
+| `NO_PROXY` | Proxy bypass list |
+| `CLAUDE_CODE_PROXY_RESOLVES_HOSTS` | Proxy DNS resolution |
+
+**Auto-Update & Plugins:**
+| Variable | Description |
+|----------|-------------|
+| `DISABLE_AUTOUPDATER` | Disable auto-updates |
+| `FORCE_AUTOUPDATE_PLUGINS` | Force plugin updates |
+| `CLAUDE_CODE_EXIT_AFTER_STOP_DELAY` | Exit delay after stop |
+
+**Advanced:**
+| Variable | Description |
+|----------|-------------|
+| `DISABLE_INTERLEAVED_THINKING` | Disable interleaved thinking |
+| `USE_BUILTIN_RIPGREP` | Use built-in ripgrep |
+| `CLOUD_ML_REGION` | Cloud ML region for Vertex |
+| `AWS_BEARER_TOKEN_BEDROCK` | AWS bearer token |
+
+### New Settings [OFFICIAL]
+
+Recent settings additions (configure in `/config` or `settings.json`):
+
+```json
+{
+  // Response language
+  "language": "en",  // Claude's response language
+
+  // Git integration
+  "attribution": true,  // Add model name to commit bylines
+  "respectGitignore": true,  // Respect .gitignore in searches
+
+  // UI preferences
+  "showTurnDuration": true,  // Show turn duration messages
+  "fileSuggestion": "custom-cmd",  // Custom @ file search command
+
+  // Session behavior
+  "companyAnnouncements": true  // Show startup announcements
+}
+```
+
+**Project Rules:**
+```bash
+# New: .claude/rules/ directory for project-specific rules
+.claude/rules/
+├── coding-style.md      # Coding conventions
+├── testing.md           # Testing requirements
+└── security.md          # Security guidelines
+```
+
+**Wildcard Permissions:**
+```json
+{
+  "permissions": {
+    "allow": {
+      "Bash": ["npm *", "git *"],  // Wildcard patterns
+      "mcp__myserver__*": {}       // MCP tool wildcards
+    }
+  }
+}
+```
 
 ---
 
@@ -1080,25 +1415,58 @@ Structure your SKILL.md:
 # Session Management
 /help              # Show all available commands
 /exit              # End current session
+/clear             # Clear conversation history
 /compact           # Reduce context size
-/microcompact      # Smart context cleanup (NEW)
+/microcompact      # Smart context cleanup (keeps CLAUDE.md, current work)
+/rewind            # Undo code changes in conversation (NEW)
+
+# Session & History
+/rename <name>     # Give current session a name (NEW)
+/resume [name|id]  # Resume a previous session by name or ID (NEW)
+/export            # Export conversation to file
+
+# Usage & Stats
+/usage             # View plan limits and usage (NEW)
+/stats             # Usage stats, engagement metrics (supports 7/30/all-time) (NEW)
 
 # Background Process Management
 /bashes            # List all background processes
+/tasks             # List all background tasks (agents, shells, etc.)
 /kill <id>         # Stop a background process
 
-# Discovery
+# Discovery & Debugging
 /commands          # List all slash commands
 /hooks             # Show configured hooks
 /skills            # List available Skills
 /plugin            # Plugin management interface
+/context           # View current context usage and visualization (NEW)
+/doctor            # Run diagnostics and validation (NEW)
 
 # Configuration
+/config            # General settings (with search) (NEW)
+/settings          # Alias for /config (NEW)
+/permissions       # Manage tool permissions (with search) (NEW)
 /status            # Show session status
 /statusline        # Configure status line display
+/model             # Switch between models
+/theme             # Theme picker (Ctrl+T toggles syntax highlighting)
+/terminal-setup    # Configure terminal (Kitty, Alacritty, Zed, Warp) (NEW)
 
 # Workspace Management
 /add-dir <path>    # Add additional directory to workspace
+/memory            # Manage CLAUDE.md project context
+
+# MCP Server Management
+/mcp               # MCP server management interface
+/mcp enable <srv>  # Enable an MCP server (NEW)
+/mcp disable <srv> # Disable an MCP server (NEW)
+
+# Remote Sessions (claude.ai subscribers)
+/teleport          # Connect to remote session (NEW)
+/remote-env        # Configure remote environment (NEW)
+
+# Plan Mode
+/plan              # Enter plan mode for structured planning
 ```
 
 ### Creating Custom Commands [OFFICIAL]
@@ -3291,6 +3659,67 @@ TodoWrite todos=[
 > "Have an Explore agent map out the authentication flow"
 ```
 
+### Decision Patterns [COMMUNITY]
+
+Quick decision trees for common scenarios:
+
+**Something's not working:**
+```
+→ Can you reproduce it?
+  → Yes: Debug systematically
+  → No: Gather more info first
+→ Did it work before?
+  → Yes: Check recent changes (git diff)
+  → No: Check assumptions
+→ Is error message clear?
+  → Yes: Address directly
+  → No: Trace execution with logging
+```
+
+**Adding a new feature:**
+```
+→ Similar feature exists?
+  → Yes: Follow that pattern
+  → No: Research best practices
+→ Touches existing code?
+  → Yes: Understand it first (read, analyze)
+  → No: Design in isolation
+→ Has complex logic?
+  → Yes: Break down first (use TodoWrite)
+  → No: Implement directly
+```
+
+**Code seems slow:**
+```
+→ Measured it? → No: Profile first
+→ Know the bottleneck? → No: Find it (use ultrathink)
+→ Have solution? → No: Research, then implement and measure again
+```
+
+**Recovery When Things Go Wrong:**
+```bash
+# Establish facts
+> "What's the current state of the codebase?"
+
+# Find smallest step forward
+> "What's the simplest fix that would work?"
+
+# Question assumptions
+> "Let me re-read the relevant code"
+
+# Find solid ground
+> "Let's revert to the last working state with /rewind"
+```
+
+**Complexity-Driven Approach:**
+| Task Type | Approach |
+|-----------|----------|
+| Trivial (typo fix) | Just fix it |
+| Simple (add button) | Quick implementation |
+| Medium (new feature) | Plan → Implement → Test |
+| Complex (architecture) | Research → Design → Prototype → Implement → Migrate |
+| Unknown | Explore to assess, then choose approach |
+
 ### For Teams [COMMUNITY]
 
 **1. Share Configuration**
@@ -3904,54 +4333,161 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.0.33** (Latest)
-- ⚡ Native binary installations now start faster
-- 🔧 Fixed `claude doctor` command symlink resolution for Homebrew vs npm-global setups
-- 🛠️ Fixed `claude mcp serve` exposing tools with incompatible output schemas
+**Version 2.1.7** (January 14, 2026) - Latest
+- ⚙️ `showTurnDuration` setting to hide turn duration messages
+- 💬 Feedback ability for permission prompts
+- 📱 Inline agent response display in task notifications
+- 🔒 Security fix: wildcard permission rules vulnerability
+- 🪟 Windows file sync compatibility improvements
+- 🔧 MCP tool search auto mode enabled by default
+- 🔗 OAuth/API Console URL migration to `platform.claude.com`
 
-**Version 2.0.32**
-- 🎨 Output styles restored after community feedback (previously deprecated in 2.0.30)
-- 📢 New `companyAnnouncements` setting for displaying startup messages
-- 🔧 Fixed hook progress messages not updating during PostToolUse hook execution
+**Version 2.1.6** (January 13, 2026)
+- 🔍 Search functionality in `/config` command
+- 📊 Date range filtering in `/stats` (7/30 days, all-time)
+- 🔄 Updates section in `/doctor` command
+- 📁 Nested `.claude/skills` directory discovery
+- 📈 `context_window.used_percentage` and `remaining_percentage` status fields
+- 🔒 Permission bypass security fix (shell line continuation)
 
-**Version 2.0.31**
-- ⌨️ **Windows**: Mode-switching shortcut changed to `Shift+Tab` (was `Alt+M`) for native installations
-- 🔍 **Vertex**: Added Web Search support for compatible models
-- 📁 **VSCode**: New `respectGitIgnore` configuration (default: true) to include .gitignored files in searches
-- 🐛 Fixed "Tool names must be unique" error affecting subagents and MCP servers
-- 🐛 Fixed `/compact` command failures with `prompt_too_long` error
-- 🐛 Fixed plugin uninstall not removing plugins
+**Version 2.1.5** (January 12, 2026)
+- 📁 `CLAUDE_CODE_TMPDIR` environment variable for temp directory override
 
-**Version 2.0.30**
-- 🔐 Added macOS keychain guidance for API key errors
-- 🛡️ New `allowUnsandboxedCommands` sandbox setting to restrict unsandboxed command execution
-- 🚫 Added `disallowedTools` field for custom agent definitions
-- 🔗 Implemented prompt-based stop hooks
-- 📁 **VSCode**: Added `respectGitIgnore` configuration option
-- ⚡ Enabled SSE MCP servers on native builds
-- ⚠️ **Breaking**: Deprecated output styles (use alternative configuration methods)
-- ⚠️ **Breaking**: Removed custom ripgrep configuration support
-- 🐛 Fixed Explore agent creating unwanted .md files
-- 🐛 Fixed `/context` command errors with thinking tokens
-- 🐛 Fixed `--mcp-config` flag not overriding file-based configs
-- 🐛 Fixed MCP tools unavailable to sub-agents
-- 🐛 Multiple other bug fixes for hooks, plugins, and VSCode integration
+**Version 2.1.3** (January 9, 2026)
+- 🔀 Merged slash commands and skills (simplified mental model)
+- 📻 Release channel toggle (`stable`/`latest`) in `/config`
+- ⚠️ Permission rules unreachability detection and warnings
+- 📝 Fixed plan file persistence across `/clear`
+- ⏱️ 10-minute tool hook execution timeout
+
+**Version 2.1.2** (January 9, 2026)
+- 🖼️ Source path metadata for dragged images
+- 🔗 OSC 8 hyperlinks for file paths (iTerm support)
+- 🪟 Windows Package Manager (winget) support
+- ⌨️ Shift+Tab in plan mode for "auto-accept edits"
+- 🔒 Command injection vulnerability fix in bash processing
+- 🧹 Memory leak fix in tree-sitter parse trees
+- 💾 Large output persistence to disk instead of truncation
+
+**Version 2.1.0** (December 23, 2025)
+- 🔄 Automatic skill hot-reload
+- 🔀 `context: fork` support for skill sub-agents
+- 🌐 `language` setting for Claude's response language
+- ⌨️ Shift+Enter works out-of-box in iTerm2, WezTerm, Ghostty, Kitty
+- 📁 `respectGitignore` setting for per-project control
+- 🎯 Wildcard pattern matching for Bash tool permissions (`*` syntax)
+- ⌨️ Unified `Ctrl+B` backgrounding for bash commands and agents
+- 🌐 `/teleport` and `/remote-env` commands for claude.ai subscribers
+- ⚡ Agents can define hooks in frontmatter
+- ✂️ New Vim motions: `;` and `,` repeat, `y` operator, `p`/`P` paste
+- 🔧 `--tools` flag for restricting tool use
+- 📄 `CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS` environment variable
+- 🖼️ Cmd+V image paste support in iTerm2
+
+**Version 2.0.74** (December 19, 2025)
+- 🔍 **LSP Tool**: Language Server Protocol for code intelligence
+- 📍 Go-to-definition, find references, hover documentation
+- 🖥️ `/terminal-setup` support for Kitty, Alacritty, Zed, Warp
+- 🎨 `Ctrl+T` shortcut in `/theme` for syntax highlighting toggle
+
+**Version 2.0.72** (December 18, 2025)
+- 🌐 Claude in Chrome (Beta) with Chrome extension control
+- ⚡ ~3x faster `@` file suggestions in git repositories
+- ⌨️ Changed thinking toggle from Tab to Alt+T
+
+**Version 2.0.70** (December 16, 2025)
+- ⌨️ Enter key submits prompt suggestions immediately (Tab edits)
+- 🎯 Wildcard syntax `mcp__server__*` for MCP tool permissions
+- 🧠 Improved memory usage (3x reduction for large conversations)
+
+**Version 2.0.67** (December 12, 2025)
+- 💡 Claude now suggests prompts (Tab accepts or Enter submits)
+- 🧠 Thinking mode enabled by default for Opus 4.5
+- 🔍 Search functionality in `/permissions` command
+
+**Version 2.0.65** (December 11, 2025)
+- ⌨️ Alt+P (Linux/Windows) or Option+P (macOS) to switch models while typing
+- 📊 Context window information in status line
+- 🔧 `CLAUDE_CODE_SHELL` environment variable for shell detection
+
+**Version 2.0.64** (December 10, 2025)
+- ⚡ Instant auto-compacting
+- 🔄 Asynchronous agents and bash commands with wake-up messages
+- 📊 `/stats` provides usage stats and engagement metrics
+- 📝 Named session support: `/rename` and `/resume <name>`
+- 📁 `.claude/rules/` directory support
+
+**Version 2.0.60** (December 6, 2025)
+- 🔄 Background agent support (agents run while working)
+- 🔧 `--disable-slash-commands` CLI flag
+- 📝 Model name in "Co-Authored-By" commit messages
+- 🔀 `/mcp enable|disable [server-name]` quick toggles
+
+**Version 2.0.51** (November 24, 2025)
+- 🧠 Opus 4.5 released
+- 🖥️ Claude Code for Desktop introduced
+- 📝 Plan Mode builds more precise plans
+
+**Version 2.0.45** (November 19, 2025)
+- ☁️ Azure AI Foundry support
+- 🔐 `PermissionRequest` hook for auto-approve/deny logic
+
+**Version 2.0.24** (October 21, 2025)
+- 🛡️ Sandbox mode for BashTool on Linux/Mac
+- 🌐 Claude Code Web → CLI teleport support
+
+**Version 2.0.20** (October 17, 2025)
+- ⭐ Claude Skills for reusable prompt templates
+
+**Version 2.0.12** (October 9, 2025)
+- 🔌 Plugin System Released
+- `/plugin install`, `/plugin enable/disable`, `/plugin marketplace`
+
+**Version 2.0.10** (October 8, 2025)
+- ✨ Rewrote terminal renderer (buttery smooth UI)
+- 🔀 `@mention` to enable/disable MCP servers
+- ⌨️ Tab completion for shell commands in bash mode
+- ✏️ PreToolUse hooks can modify tool inputs
+- ⌨️ Press `Ctrl-G` to edit prompt in system text editor
+
+**Version 2.0.0** (September 29, 2025)
+- 🆕 New native VS Code extension
+- ✨ Fresh UI throughout app
+- ⏪ `/rewind` to undo code changes
+- 📊 `/usage` for plan limits viewing
+- ⌨️ Tab toggles thinking (sticky)
+- 🔍 Ctrl-R searches history
+- 🤖 SDK became Claude Agent SDK
+- 🔧 `--agents` flag for dynamic subagents
 
 ---
 
 ### This Guide's Changelog
 
+**Version 2026.1 (January 2026)**
+- Major update covering v2.0.34 through v2.1.7
+- Added **LSP Tool** documentation (go-to-definition, find references, hover)
+- Added **Thinking Mode** section (Tab toggle, ultrathink, Alt+T)
+- Added **Plan Mode** documentation
+- Added **Background Tasks & Agents** section (Ctrl+B)
+- Added comprehensive **Keyboard Shortcuts** reference
+- Added **Environment Variables** comprehensive list
+- Added **Prompt Suggestions** documentation
+- Added 20+ new slash commands (/rewind, /stats, /usage, /config, /doctor, /terminal-setup, /rename, /resume, /teleport, /remote-env, etc.)
+- Added new settings documentation (language, attribution, respectGitignore, etc.)
+- Added `.claude/rules/` directory documentation
+- Added wildcard permissions syntax
+- Updated changelog to v2.1.7
+
 **Version 2025.0 (January 2025)**
 - Complete rewrite focused on verified features
 - Clear separation of official vs. experimental content
-- Added Skills System documentation (new feature)
+- Added Skills System documentation
 - Added Plugins documentation
 - Added `/statusline` and `/add-dir` commands
 - Added CLI flags reference section
 - Enhanced `@filename` reference syntax documentation
-- Added latest Claude Code CLI release notes (v2.0.30-2.0.33)
 - Comprehensive examples and patterns
-- Removed unverified content from main sections
 - All claims verified against official docs
 
 **Previous versions** mixed Claude.ai web features (REPL, Artifacts) with Claude Code CLI features, causing confusion. This version focuses exclusively on Claude Code CLI.
