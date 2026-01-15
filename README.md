@@ -1,6 +1,8 @@
 # The Complete Claude Code CLI Guide
 
-[![Official Docs](https://img.shields.io/badge/Docs-docs.claude.com-blue)](https://docs.claude.com/en/docs/claude-code/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![Version](https://img.shields.io/badge/Guide-2025-green)](#)
+[![Official Docs](https://img.shields.io/badge/Docs-docs.claude.com-blue)](https://docs.claude.com/en/docs/claude-code/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![Version](https://img.shields.io/badge/Guide-2025-green)](#) [![Auto-Updated](https://img.shields.io/badge/Auto--Updated-Every%202%20Days-brightgreen)](#auto-update-pipeline)
+
+> **Live Guide**: This guide is automatically updated every 2 days by Claude Code, checking official Anthropic documentation, GitHub releases, and changelogs for new features and changes. Last pipeline run is logged in [update-log.md](./update-log.md).
 
 > **For AI Agents**: This guide is optimized for both human developers and AI agents. All features are verified against official documentation. `[OFFICIAL]` tags indicate features from docs.claude.com. `[COMMUNITY]` tags indicate observed patterns. `[EXPERIMENTAL]` tags indicate unverified concepts.
 
@@ -4491,6 +4493,43 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 - All claims verified against official docs
 
 **Previous versions** mixed Claude.ai web features (REPL, Artifacts) with Claude Code CLI features, causing confusion. This version focuses exclusively on Claude Code CLI.
+
+---
+
+## 🔄 Auto-Update Pipeline
+
+This guide is a **living document** that automatically stays current with Claude Code's development.
+
+### How It Works
+
+A bi-daily pipeline (every 2 days at 3am UTC) runs Claude Code to:
+
+1. **Check official sources:**
+   - [Anthropic Docs](https://docs.anthropic.com/en/docs/claude-code) - Official documentation
+   - [GitHub Releases](https://github.com/anthropics/claude-code/releases) - Version changelog
+   - [Anthropic News](https://www.anthropic.com/news) - Announcements
+   - [Anthropic Changelog](https://www.anthropic.com/changelog) - Product updates
+
+2. **Compare against current guide content**
+
+3. **Update with verified changes:**
+   - New features and capabilities
+   - Changed CLI flags or commands
+   - New tools or integrations
+   - Bug fixes or deprecations
+
+4. **Auto-commit changes** with detailed commit messages
+
+### Update Log
+
+See [update-log.md](./update-log.md) for the history of automated updates.
+
+### Manual Trigger
+
+The update can also be run manually:
+```bash
+./scripts/update-guide.sh
+```
 
 ---
 
