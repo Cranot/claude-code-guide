@@ -1,6 +1,6 @@
 # The Complete Claude Code CLI Guide
 
-[![Official Docs](https://img.shields.io/badge/Docs-docs.claude.com-blue)](https://docs.claude.com/en/docs/claude-code/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![Version](https://img.shields.io/badge/Guide-2025-green)](#) [![Auto-Updated](https://img.shields.io/badge/Auto--Updated-Every%202%20Days-brightgreen)](#auto-update-pipeline)
+[![Official Docs](https://img.shields.io/badge/Docs-docs.claude.com-blue)](https://docs.claude.com/en/docs/claude-code/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![Version](https://img.shields.io/badge/Guide-2026-green)](#) [![Auto-Updated](https://img.shields.io/badge/Auto--Updated-Every%202%20Days-brightgreen)](#auto-update-pipeline)
 
 > **Live Guide**: This guide is automatically updated every 2 days by Claude Code, checking official Anthropic documentation, GitHub releases, and changelogs for new features and changes. Last pipeline run is logged in [update-log.md](./update-log.md).
 
