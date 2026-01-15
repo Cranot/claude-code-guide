@@ -3533,6 +3533,38 @@ Based on [Anthropic's guidance](https://www.anthropic.com/engineering/claude-cod
 "Compare @src/api/v1/users.ts and @src/api/v2/users.ts - what changed?"
 ```
 
+### Key Principles [COMMUNITY]
+
+**1. Understand the "when" of each feature:**
+
+| Feature | Activates When... |
+|---------|-------------------|
+| MCP | External data/action needed |
+| Skills | Context matches description (automatic) |
+| Commands | User types `/command` (manual) |
+| Hooks | Lifecycle event fires (PreToolUse, PostToolUse, etc.) |
+| Sub-agents | Task delegated for isolated work |
+
+**2. Combinations multiply value:**
+```
+MCP alone           = 1x (fetch data)
+MCP + Skill         = 3x (fetch + auto-expertise)
+MCP + Skill + Hook  = 9x (fetch + expertise + enforce)
+```
+Each layer multiplies the previous. Invest in setup.
+
+**3. Prompting is the foundation:**
+All synergies fail with vague prompts. Master specificity first:
+- Name exact files
+- State exact requirements
+- Define exact success criteria
+
+**4. We showed 8 synergies. There are 63+.**
+Six features = 2⁶ combinations. This guide shows patterns, not an exhaustive list. The best synergies are the ones you discover for your workflow.
+
+**5. Setup cost amortizes:**
+One hour configuring `.claude/` saves hundreds of hours across future sessions. Treat it as infrastructure.
+
 ---
 
 ## Examples Library
