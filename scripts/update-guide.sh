@@ -37,32 +37,37 @@ cd "$GUIDE_DIR"
 PROMPT=$(cat <<'EOF'
 You are updating the Claude Code Guide (README.md in this directory). Your task:
 
-1. CHECK THESE SOURCES for updates about Claude Code:
-   - https://docs.anthropic.com/en/docs/claude-code/overview (official docs)
-   - https://www.anthropic.com/news (filter for Claude Code announcements)
-   - https://github.com/anthropics/claude-code/releases (GitHub releases/changelog)
-   - https://www.anthropic.com/changelog (product changelog)
+## 1. CHECK SOURCES for updates about Claude Code:
+- https://docs.anthropic.com/en/docs/claude-code/overview (official docs)
+- https://www.anthropic.com/news (filter for Claude Code announcements)
+- https://github.com/anthropics/claude-code/releases (GitHub releases/changelog)
+- https://www.anthropic.com/changelog (product changelog)
 
-2. COMPARE what you find against the current README.md content
+## 2. UPDATE the README.md with any:
+- New features or capabilities
+- Changed CLI flags or commands
+- New MCP tools or integrations
+- Updated best practices
+- Bug fixes or deprecations
+- New examples or patterns
 
-3. UPDATE the README.md with any:
-   - New features or capabilities
-   - Changed CLI flags or commands
-   - New MCP tools or integrations
-   - Updated best practices
-   - Bug fixes or deprecations
-   - New examples or patterns
+## 3. QUALITY CHECK - Review and fix if needed:
+- Broken internal links (anchors that don't match headers)
+- Unbalanced code fences (``` must be paired)
+- Outdated year references
+- Broken markdown formatting
+- Navigation table matches actual sections
+- Any other quality issues you notice
 
-4. FORMATTING RULES:
-   - Maintain the existing structure and style
-   - Add [NEW] tags to newly added sections
-   - Update dates where relevant
-   - Keep [OFFICIAL], [COMMUNITY], [EXPERIMENTAL] tags accurate
-   - Add update notes to the changelog section at the bottom
+## 4. FORMATTING RULES:
+- Maintain the existing structure and style
+- Add [NEW] tags to newly added sections
+- Keep [OFFICIAL], [COMMUNITY], [EXPERIMENTAL] tags accurate in content (not headers)
+- Add update notes to the changelog section
 
-5. If NO UPDATES are needed, do not modify the file.
-
-6. After checking, create a brief summary of what was updated (or that no updates were needed).
+## 5. OUTPUT:
+- If changes made: brief summary of what was updated
+- If no changes needed: just say "No updates needed"
 
 IMPORTANT: Be thorough but accurate. Only add information you can verify from official sources.
 EOF
@@ -103,30 +108,6 @@ EOF
     echo "Commit created successfully!"
     echo "$(date -u '+%Y-%m-%d'): Guide updated - see git log for details" >> "$LOG_FILE"
 fi
-
-# Quality Check
-echo ""
-echo "Running quality checks..."
-
-# Check 1: Code fences are balanced (critical)
-FENCE_COUNT=$(grep -c '^```' "$README_PATH" || echo "0")
-if [ $((FENCE_COUNT % 2)) -ne 0 ]; then
-    echo "WARNING: Unbalanced code fences ($FENCE_COUNT found)"
-else
-    echo "✓ Code fences balanced ($FENCE_COUNT)"
-fi
-
-# Check 2: File size sanity check
-FILE_SIZE=$(wc -c < "$README_PATH")
-echo "✓ File size: $(numfmt --to=iec $FILE_SIZE 2>/dev/null || echo "$FILE_SIZE bytes")"
-
-# Check 3: Section count
-SECTION_COUNT=$(grep -c '^## ' "$README_PATH" || echo "0")
-echo "✓ Sections: $SECTION_COUNT"
-
-# Check 4: Internal link count (informational)
-LINK_COUNT=$(grep -oP '\]\(#[^)]+\)' "$README_PATH" | wc -l || echo "0")
-echo "✓ Internal links: $LINK_COUNT"
 
 echo ""
 echo "Update check complete!"
