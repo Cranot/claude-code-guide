@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 What is Claude Code?
+## What is Claude Code?
 
 **Claude Code is an agentic AI coding assistant that lives in your terminal.** It understands your codebase, edits files directly, runs commands, and helps you code faster through natural language conversation.
 
@@ -30,7 +30,7 @@ claude --version  # Verify installation
 
 ---
 
-## 📖 Contents
+## Contents
 
 | Getting Started | Core Features | Practical Usage | Reference |
 |-----------------|---------------|-----------------|-----------|
@@ -43,7 +43,7 @@ claude --version  # Verify installation
 
 ---
 
-## 📋 Quick Reference
+## Quick Reference
 
 ### Essential Commands [OFFICIAL]
 
@@ -138,7 +138,7 @@ claude --print "run tests" --no-color --output-format json
 
 ---
 
-## 🎓 Core Concepts
+## Core Concepts
 
 ### 1. How Claude Code Works [OFFICIAL]
 
@@ -682,7 +682,7 @@ Customize what information appears in your status line:
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### Your First Session
 
@@ -799,7 +799,7 @@ This configuration:
 
 ---
 
-## 🧠 Advanced Features
+## Advanced Features
 
 ### Thinking Mode [OFFICIAL]
 
@@ -1086,7 +1086,7 @@ Recent settings additions (configure in `/config` or `settings.json`):
 
 ---
 
-## 🔧 Skills System
+## Skills System
 
 **Skills are modular capabilities that Claude Code autonomously activates based on your request.**
 
@@ -1367,7 +1367,7 @@ Structure your SKILL.md:
 
 ---
 
-## ⚡ Slash Commands
+## Slash Commands
 
 **Slash commands are user-invoked workflow templates stored as Markdown files.**
 
@@ -1724,7 +1724,7 @@ This becomes available as `/search-docs` in Claude Code.
 
 ---
 
-## 🔗 Hooks System
+## Hooks System
 
 **Hooks are automated scripts that execute at specific points in Claude Code's workflow.**
 
@@ -2325,7 +2325,7 @@ rm -f /tmp/claude-pre-$$.json /tmp/claude-time-$$.txt
 
 ---
 
-## 🌐 MCP Integration
+## MCP Integration
 
 **Model Context Protocol (MCP) connects Claude Code to external data sources and tools.**
 
@@ -2742,7 +2742,7 @@ ${VAR} shows literally instead of expanding
 
 ---
 
-## 🤖 Sub-Agents
+## Sub-Agents
 
 **Sub-agents are specialized AI assistants configured for specific tasks.**
 
@@ -2969,7 +2969,7 @@ allowedTools: [Read, Write, Edit, Bash]  # Can modify code
 
 ---
 
-## 📦 Plugins
+## Plugins
 
 **Plugins bundle Skills, Commands, Hooks, and MCP servers for easy sharing.**
 
@@ -3094,7 +3094,7 @@ When team members trust the repository, plugins install automatically.
 
 ---
 
-## 🔄 Development Workflows
+## Development Workflows
 
 ### Core Development Approach [COMMUNITY]
 
@@ -3219,7 +3219,7 @@ TodoWrite todos=[
 
 ---
 
-## 🔗 Tool Synergies
+## Tool Synergies
 
 **How Claude Code features work together for powerful workflows.**
 
@@ -3307,7 +3307,7 @@ TodoWrite todos=[
 
 ---
 
-## 📚 Examples Library
+## Examples Library
 
 ### Example 1: Adding Authentication
 
@@ -3549,7 +3549,7 @@ TodoWrite todos=[
 
 ---
 
-## ✅ Best Practices
+## Best Practices
 
 ### For Developers [COMMUNITY]
 
@@ -3757,7 +3757,7 @@ Quick decision trees for common scenarios:
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues [COMMUNITY]
 
@@ -3983,7 +3983,7 @@ grep -i "mcp" ~/.claude/logs/claude.log
 
 ---
 
-## 🔒 Security Considerations
+## Security Considerations
 
 ### Security Model [OFFICIAL]
 
@@ -4102,7 +4102,7 @@ Claude Code operates with:
 
 ---
 
-## 📊 SDK Integration
+## SDK Integration
 
 **Claude Code can be used programmatically via TypeScript/Python SDKs.**
 
@@ -4168,7 +4168,7 @@ session.end()
 
 ---
 
-## 🧪 Experimental Concepts
+## Experimental Concepts
 
 > ⚠️ **Warning**: This section contains theoretical concepts and patterns that are NOT verified in official documentation. These are experimental ideas for power users to explore.
 
@@ -4242,7 +4242,7 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 ---
 
-## 📝 Additional Resources
+## Additional Resources
 
 ### Official Documentation [OFFICIAL]
 - **Main Docs**: https://docs.claude.com/en/docs/claude-code/overview
@@ -4266,7 +4266,7 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 ---
 
-## 📜 Changelog
+## Changelog
 
 ### Claude Code CLI Releases [OFFICIAL]
 
@@ -4433,7 +4433,7 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 
 ---
 
-## 🔄 Auto-Update Pipeline
+## Auto-Update Pipeline
 
 This guide is a **living document** that automatically stays current with Claude Code's development.
 
@@ -4470,7 +4470,7 @@ The update can also be run manually:
 
 ---
 
-## 📄 License
+## License
 
 This guide is community-maintained and not officially affiliated with Anthropic. Information is gathered from official documentation (docs.claude.com) and community experience.
 
