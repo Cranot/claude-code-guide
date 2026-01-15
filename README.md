@@ -3225,6 +3225,26 @@ TodoWrite todos=[
 
 Claude Code's features form a layered automation stack. Understanding how they combine unlocks powerful workflows.
 
+### Quick Reference: 15 Synergy Patterns
+
+| # | Synergy | Use Case |
+|---|---------|----------|
+| 1 | [Explore → Plan → Code → Commit](#synergy-1-explore--plan--code--commit-official) | Standard development workflow |
+| 2 | [Test-Driven Development](#synergy-2-test-driven-development-community) | Quality-first coding |
+| 3 | [MCP + Slash Commands](#synergy-3-mcp--slash-commands-official) | External tool integrations |
+| 4 | [Skills + Hooks](#synergy-4-skills--hooks-auto-apply--enforce-official) | Auto-apply expertise + enforce rules |
+| 5 | [Sub-agents + Background](#synergy-5-sub-agents--background-tasks-official) | Parallel isolated work |
+| 6 | [Multi-Claude Workflows](#synergy-6-multi-claude-workflows-community) | Git worktrees for parallelism |
+| 7 | [Context Preservation](#synergy-7-context-preservation-across-sessions-community) | Session continuity |
+| 8 | [Quality Pipeline](#synergy-8-quality-pipeline-hooks--tests--lint-community) | Automated quality enforcement |
+| 9 | [Visual-Driven Development](#synergy-9-visual-driven-development-community) | Screenshots/mockups → code |
+| 10 | [Log Analysis Pipeline](#synergy-10-log-analysis-pipeline-official) | Unix pipes + Claude |
+| 11 | [Schema-Driven Development](#synergy-11-schema-driven-development-community) | DB schema → types/API/tests |
+| 12 | [Dependency Management](#synergy-12-dependency-management-community) | Update + test + fix cycle |
+| 13 | [Documentation Generation](#synergy-13-documentation-generation-community) | Codebase → living docs |
+| 14 | [Refactoring with Safety](#synergy-14-refactoring-with-safety-net-community) | Large changes without breaking |
+| 15 | [Incident Response](#synergy-15-incident-response-community) | Production debugging workflow |
+
 ### The Feature Stack [OFFICIAL]
 
 Each feature serves a distinct purpose and they build on each other:
