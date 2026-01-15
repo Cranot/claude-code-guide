@@ -3223,88 +3223,314 @@ TodoWrite todos=[
 
 ## Tool Synergies
 
-**How Claude Code features work together for powerful workflows.**
+Claude Code's features form a layered automation stack. Understanding how they combine unlocks powerful workflows.
 
-### Synergy Pattern 1: Research → Validate → Implement
+### The Feature Stack [OFFICIAL]
+
+Each feature serves a distinct purpose and they build on each other:
+
+| Layer | Feature | Purpose | Invocation |
+|-------|---------|---------|------------|
+| **Connection** | MCP | External tools (GitHub, Jira, DBs) | Automatic when configured |
+| **Capability** | Skills | Domain expertise (testing, security) | Auto-activated by context |
+| **Entry Point** | Slash Commands | Repeatable workflows | Manual via `/command` |
+| **Enforcement** | Hooks | Quality gates, auto-actions | Lifecycle events |
+| **Isolation** | Sub-agents | Parallel specialized work | Task delegation |
+| **Bundling** | Plugins | Package all of the above | Install once |
+
+**Key insight:** MCP connects external systems. Skills provide automatic expertise. Slash commands give explicit control. Hooks enforce standards. Sub-agents isolate heavy work.
+
+### Synergy 1: Explore → Plan → Code → Commit [OFFICIAL]
+
+The recommended workflow from [Anthropic's best practices](https://www.anthropic.com/engineering/claude-code-best-practices):
 
 ```bash
-# 1. Research with WebSearch + WebFetch
-> "Research best practices for Redis caching in Node.js"
+# Step 1: Explore - understand what exists
+"Read src/auth/ and explain the current authentication flow.
+List all files involved and their responsibilities."
 
-# 2. Explore codebase with Explore agent
-> "Find where we currently handle caching"
+# Step 2: Plan - use extended thinking
+"Think hard about how to add OAuth2 support. Create a detailed plan
+covering: files to modify, new files needed, dependencies, and test strategy."
 
-# 3. Implement with guidance
-> "Implement Redis caching following the patterns found"
+# Step 3: Code - implement with explicit files
+"Implement the OAuth2 changes following the plan. Start with
+src/auth/oauth.ts, then update src/auth/index.ts to export it."
 
-# 4. Verify with tests
-> "Create tests for the caching implementation"
+# Step 4: Commit - structured message
+"Create a commit with message: 'feat(auth): add OAuth2 provider support'"
 ```
 
-### Synergy Pattern 2: Skills + Hooks + MCP
+**Why it works:** Each step builds context. Exploring first prevents wrong assumptions. Planning with "think hard" engages extended reasoning. Explicit file names reduce ambiguity.
+
+### Synergy 2: Test-Driven Development [COMMUNITY]
+
+Write tests first, then implement:
 
 ```bash
-# Setup:
-- Skill: "security-scanner" (auto-activates on code review)
-- Hook: Blocks commits with security issues
-- MCP: Logs security findings to Jira
+# 1. Write failing tests first
+"Write tests for a new validateEmail function in src/utils/validation.ts.
+Cover: valid emails, invalid formats, empty input, null input.
+Use Jest. The function doesn't exist yet - tests should fail."
 
-# Workflow:
-> "Review this authentication code"
+# 2. Confirm tests fail
+"Run npm test -- --testPathPattern=validation"
 
-# Triggers:
-1. Security scanner Skill activates automatically
-2. Finds vulnerability
-3. Hook blocks any commit attempt
-4. MCP logs issue to Jira automatically
+# 3. Commit the failing tests
+"Commit with message: 'test(validation): add email validation tests (red)'"
+
+# 4. Implement to pass
+"Now implement validateEmail in src/utils/validation.ts to pass all tests.
+Use a standard regex pattern. No external dependencies."
+
+# 5. Verify and commit
+"Run the tests again. If passing, commit: 'feat(validation): implement email validation (green)'"
 ```
 
-### Synergy Pattern 3: Sub-Agents + Background Tasks
+**Why it works:** Tests define the contract before implementation. Claude iterates against concrete targets. Git history shows the TDD discipline.
+
+### Synergy 3: MCP + Slash Commands [OFFICIAL]
+
+MCP servers expose prompts that become slash commands:
 
 ```bash
-# Start development server in background
-> "Start the dev server in background"
+# Add MCP server
+claude mcp add github -- gh-mcp
 
-# Launch test watcher
-> "Run tests in watch mode in background"
+# Now available as commands:
+/github-pr-review      # Review current PR
+/github-issues         # List open issues
+/github-create-pr      # Create PR from current branch
 
-# Use Explore agent while services run
-> "While those run, find all API endpoints and document them"
+# Example workflow - complete ticket
+/github-issues         # "Show me issue #42"
+# Claude fetches issue details via MCP
 
-# Agents work in parallel:
-- Main session: Documentation work
-- Background: Dev server running
-- Background: Tests running
-- Sub-agent: Exploring codebase
+"Implement the feature described in issue #42.
+Follow our patterns in src/features/."
+
+/github-create-pr      # Creates PR linked to issue
 ```
 
-### Synergy Pattern 4: TodoWrite + Multiple Files
+**Real MCP integrations:** GitHub, Jira, Linear, Notion, PostgreSQL, Slack, Figma, Google Drive. Each adds domain-specific commands.
 
-```bash
-# Complex refactor across many files
-> "Refactor the authentication system to use JWT instead of sessions"
+### Synergy 4: Skills + Hooks (Auto-Apply + Enforce) [OFFICIAL]
 
-# Claude:
-1. Creates comprehensive TodoWrite list
-2. Works through each file systematically
-3. Updates todos as progress
-4. You can see progress in real-time
-5. Can interrupt and resume anytime
+Skills activate automatically; hooks enforce at lifecycle events:
+
+```
+.claude/
+├── skills/
+│   └── security-review/
+│       └── SKILL.md        # Auto-activates on security-related tasks
+└── settings.json           # Hook: block commits if security issues found
 ```
 
-### Synergy Pattern 5: Slash Commands + Hooks + Skills
+**Skill definition** (`.claude/skills/security-review/SKILL.md`):
+```markdown
+---
+name: security-review
+description: Analyzes code for security vulnerabilities. Activates when
+reviewing auth code, API endpoints, or user input handling.
+allowed-tools: [Read, Grep, Glob]
+---
+
+When activated, check for:
+- SQL injection (string concatenation in queries)
+- XSS (unescaped user input in HTML)
+- Exposed secrets (API keys, passwords in code)
+- Broken auth (missing token validation)
+
+Report findings with file:line references and severity.
+```
+
+**Hook definition** (in `settings.json`):
+```json
+{
+  "hooks": {
+    "PreToolUse": [{
+      "tool": "Bash",
+      "command": "git commit",
+      "script": ".claude/hooks/security-check.sh"
+    }]
+  }
+}
+```
+
+**Workflow:**
+```bash
+"Review the authentication code in src/auth/ for security issues"
+# Skill auto-activates, finds issues
+
+"Fix the SQL injection vulnerability in src/auth/login.ts:45"
+# You fix it
+
+"Commit the security fix"
+# Hook runs security-check.sh before allowing commit
+# Blocks if issues remain, allows if clean
+```
+
+### Synergy 5: Sub-agents + Background Tasks [OFFICIAL]
+
+Isolate work and run in parallel:
 
 ```bash
-# Custom deployment workflow
-/deploy-staging
+# Start services in background (Ctrl+B or explicit)
+"Run npm run dev in background"
+"Run npm test -- --watch in background"
 
-# Triggers:
-1. Slash command runs pre-deploy checks
-2. Hooks validate all tests pass
-3. Security scanner Skill auto-reviews
-4. Hook blocks if issues found
-5. MCP notifies team in Slack
-6. Deployment proceeds if all checks pass
+# Check running tasks
+/tasks
+
+# Main session: Use explorer agent for research
+"Use the explorer agent to find all API endpoints and their handlers"
+
+# Parallel work happening:
+# - Background: Dev server on port 3000
+# - Background: Test watcher re-running on changes
+# - Sub-agent: Scanning codebase for endpoints
+# - Main session: Available for next task
+
+# Later, retrieve agent results
+"What did the explorer agent find?"
+```
+
+**Sub-agent types:** `Explore` (codebase search), `Plan` (architecture), custom agents defined in `.claude/agents/`.
+
+### Synergy 6: Multi-Claude Workflows [COMMUNITY]
+
+Run multiple Claude instances for independent work:
+
+```bash
+# Terminal 1: Feature development
+cd feature-branch-worktree
+claude
+"Implement the user dashboard feature"
+
+# Terminal 2: Code review (same repo, different worktree)
+cd review-worktree
+claude
+"Review the changes in the user-dashboard branch for security and performance"
+
+# Terminal 3: Documentation
+cd docs-worktree
+claude
+"Update API documentation based on recent changes"
+```
+
+**Advanced: Claude reviewing Claude:**
+```bash
+# Claude 1 writes code
+"Implement rate limiting for the API endpoints in src/api/"
+
+# Claude 2 reviews (different session)
+"Review the rate limiting implementation. Check for:
+- Edge cases (what happens at exactly the limit?)
+- Race conditions (concurrent requests)
+- Configuration flexibility (can limits be changed without deploy?)"
+```
+
+### Synergy 7: Context Preservation Across Sessions [COMMUNITY]
+
+Combine CLAUDE.md + slash commands for continuity:
+
+**Project CLAUDE.md:**
+```markdown
+# Project: E-commerce API
+
+## Current Sprint
+- [ ] Implement payment webhooks
+- [ ] Add inventory tracking
+- [x] User authentication (completed Jan 10)
+
+## Key Decisions
+- Using Stripe for payments (see docs/adr/001-payment-provider.md)
+- PostgreSQL for inventory (see src/db/schema.sql)
+
+## Commands
+npm run dev      # Start on port 3000
+npm test         # Run Jest tests
+npm run db:seed  # Seed test data
+```
+
+**Slash command for context loading** (`.claude/commands/resume.md`):
+```markdown
+---
+name: resume
+description: Resume work on current sprint
+---
+
+Read CLAUDE.md and the current sprint tasks.
+Check git log for recent commits.
+Summarize: what's done, what's in progress, what's next.
+Ask what I want to work on.
+```
+
+**Usage:**
+```bash
+claude
+/resume
+# Claude reads context, summarizes state, ready to continue
+```
+
+### Synergy 8: Quality Pipeline (Hooks + Tests + Lint) [COMMUNITY]
+
+Automated quality enforcement:
+
+**Hook configuration:**
+```json
+{
+  "hooks": {
+    "PostToolUse": [{
+      "tool": "Write",
+      "script": "npm run lint:fix -- $FILE"
+    }, {
+      "tool": "Edit",
+      "script": "npm run lint:fix -- $FILE"
+    }],
+    "PreToolUse": [{
+      "tool": "Bash",
+      "command": "git commit",
+      "script": ".claude/hooks/pre-commit.sh"
+    }]
+  }
+}
+```
+
+**Pre-commit hook script:**
+```bash
+#!/bin/bash
+npm run lint || exit 1
+npm test || exit 1
+echo "All checks passed"
+```
+
+**Result:** Every file edit auto-lints. Every commit requires passing tests. Quality enforced without manual intervention.
+
+### Prompting Best Practices [OFFICIAL]
+
+Based on [Anthropic's guidance](https://www.anthropic.com/engineering/claude-code-best-practices):
+
+| Instead of... | Write... |
+|---------------|----------|
+| "Add tests" | "Write Jest tests for src/utils/date.ts covering: formatDate with valid dates, invalid inputs, and timezone handling" |
+| "Fix the bug" | "The login fails when email contains '+'. Fix src/auth/validate.ts:23 to handle plus signs in email addresses" |
+| "Review this" | "Review src/api/users.ts for: N+1 queries, missing error handling, and SQL injection risks" |
+| "Make it faster" | "Profile the /api/products endpoint. Identify the slowest operation and optimize it. Target: <100ms response" |
+
+**Thinking modes** (escalating reasoning depth):
+- `"think"` - Standard extended thinking
+- `"think hard"` - More thorough analysis
+- `"think harder"` - Deep exploration of options
+- `"ultrathink"` - Maximum reasoning budget
+
+**File references:**
+```bash
+# Use tab-completion or explicit paths
+"Read @src/auth/login.ts and explain the authentication flow"
+
+# Multiple files
+"Compare @src/api/v1/users.ts and @src/api/v2/users.ts - what changed?"
 ```
 
 ---
