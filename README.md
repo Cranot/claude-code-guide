@@ -3507,6 +3507,176 @@ echo "All checks passed"
 
 **Result:** Every file edit auto-lints. Every commit requires passing tests. Quality enforced without manual intervention.
 
+### Synergy 9: Visual-Driven Development [COMMUNITY]
+
+Use screenshots and mockups as implementation targets:
+
+```bash
+# Share a design mockup
+"Here's the Figma mockup for the new dashboard @mockups/dashboard.png
+Implement this in src/components/Dashboard.tsx using our existing
+Button, Card, and Chart components. Match the layout exactly."
+
+# Iterate on visual feedback
+"Here's a screenshot of the current result @screenshots/current.png
+Compare to the mockup. Fix: the spacing between cards is wrong,
+and the chart colors don't match."
+
+# Debug visual issues
+"This screenshot shows a layout bug on mobile @bugs/mobile-layout.png
+The sidebar overlaps the content. Fix the responsive styles in
+src/styles/layout.css"
+```
+
+**Why it works:** Claude can see images. Concrete visual targets reduce ambiguity. Iteration is fast.
+
+### Synergy 10: Log Analysis Pipeline [OFFICIAL]
+
+Unix pipes + Claude for real-time analysis:
+
+```bash
+# Monitor logs for anomalies
+tail -f /var/log/app.log | claude -p "Alert me if you see errors or unusual patterns"
+
+# Analyze crash dumps
+cat crash.log | claude -p "Analyze this crash. Identify root cause and suggest fix."
+
+# Parse and summarize
+grep "ERROR" app.log | claude -p "Categorize these errors by type and frequency. Which is most critical?"
+
+# CI/CD integration
+npm test 2>&1 | claude -p "If tests failed, explain why and suggest fixes"
+```
+
+**Why it works:** Claude integrates with Unix pipelines. Composable with existing tools.
+
+### Synergy 11: Schema-Driven Development [COMMUNITY]
+
+Database schema as source of truth:
+
+```bash
+# Generate types from schema
+"Read prisma/schema.prisma and generate TypeScript interfaces
+in src/types/database.ts. Include JSDoc comments explaining each field."
+
+# Create API endpoints from schema
+"Based on the User model in schema.prisma, create CRUD endpoints
+in src/api/users.ts. Include validation using zod."
+
+# Generate test fixtures
+"Read the schema and create realistic test fixtures in
+tests/fixtures/users.ts. Cover edge cases: empty strings,
+max lengths, special characters."
+
+# Migration safety check
+"Compare prisma/schema.prisma with the current database.
+Identify breaking changes. Suggest migration strategy."
+```
+
+**Why it works:** Schema is the contract. Generate everything from it. Single source of truth.
+
+### Synergy 12: Dependency Management [COMMUNITY]
+
+Update, test, and fix in one flow:
+
+```bash
+# Check for updates
+"Run npm outdated. For each major update, explain breaking changes
+and effort to upgrade."
+
+# Upgrade with safety net
+"Upgrade lodash to v5. Run tests. If anything breaks, fix it.
+Commit only when tests pass."
+
+# Security audit flow
+"Run npm audit. For each vulnerability:
+1. Check if we actually use the affected code path
+2. If yes, upgrade or find alternative
+3. If no, document why it's acceptable"
+
+# License compliance
+"Check licenses of all dependencies. Flag any GPL or unknown
+licenses. We need MIT/Apache/BSD only."
+```
+
+**Why it works:** Dependency management is tedious. Claude handles the research and fixes.
+
+### Synergy 13: Documentation Generation [COMMUNITY]
+
+Codebase exploration → living documentation:
+
+```bash
+# API documentation
+"Explore src/api/ and generate OpenAPI spec in docs/api.yaml.
+Include request/response examples from actual code."
+
+# Architecture documentation
+"Analyze the codebase structure. Create docs/ARCHITECTURE.md
+explaining: folder structure, data flow, key patterns used."
+
+# Onboarding guide
+"Create docs/ONBOARDING.md for new developers. Include:
+setup steps, key files to understand first, common tasks,
+gotchas you found in the code."
+
+# Changelog from commits
+"Read git log for the last month. Generate CHANGELOG.md
+grouped by: Features, Fixes, Breaking Changes."
+```
+
+**Why it works:** Documentation stays in sync with code. Generated from source, not memory.
+
+### Synergy 14: Refactoring with Safety Net [COMMUNITY]
+
+Large refactors without breaking things:
+
+```bash
+# Rename with confidence
+"Rename the User class to Account across the entire codebase.
+Update all imports, types, and documentation. Run tests after."
+
+# Extract component
+"The Dashboard component is 500 lines. Extract the chart logic
+into src/components/DashboardChart.tsx. Keep all behavior identical.
+Tests must still pass."
+
+# Change data structure
+"Migrate from storing user.fullName to user.firstName + user.lastName.
+Update: database schema, API responses, frontend display, tests.
+Create migration script for existing data."
+
+# Upgrade patterns
+"Replace all callback-style async code in src/services/ with
+async/await. One file at a time. Test after each file."
+```
+
+**Why it works:** TodoWrite tracks progress. Tests verify correctness. Safe incremental changes.
+
+### Synergy 15: Incident Response [COMMUNITY]
+
+Debug production issues systematically:
+
+```bash
+# Initial triage
+"Production is returning 500 errors. Here's the error log:
+[paste log]
+Identify the most likely cause. List files to investigate."
+
+# Root cause analysis
+"Read the files identified. Trace the code path from
+API endpoint to error. Explain exactly where and why it fails."
+
+# Fix with minimal blast radius
+"Implement the smallest possible fix. Don't refactor.
+Just stop the bleeding. Add a TODO for proper fix later."
+
+# Post-mortem documentation
+"Create docs/incidents/2024-01-15-500-errors.md documenting:
+what happened, root cause, fix applied, prevention measures."
+```
+
+**Why it works:** Structured approach prevents panic. Documentation prevents recurrence.
+
 ### Prompting Best Practices [OFFICIAL]
 
 Based on [Anthropic's guidance](https://www.anthropic.com/engineering/claude-code-best-practices):
@@ -3559,8 +3729,8 @@ All synergies fail with vague prompts. Master specificity first:
 - State exact requirements
 - Define exact success criteria
 
-**4. We showed 8 synergies. There are 63+.**
-Six features = 2⁶ combinations. This guide shows patterns, not an exhaustive list. The best synergies are the ones you discover for your workflow.
+**4. We showed 15 synergies. There are many more.**
+These patterns are starting points. Combine them, adapt them, discover your own. The best workflows are the ones tailored to your project.
 
 **5. Setup cost amortizes:**
 One hour configuring `.claude/` saves hundreds of hours across future sessions. Treat it as infrastructure.
