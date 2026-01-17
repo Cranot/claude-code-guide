@@ -1,12 +1,12 @@
 # The Complete Claude Code CLI Guide
 
-[![Official Docs](https://img.shields.io/badge/Official_Docs-docs.claude.com-blue)](https://docs.claude.com/en/docs/claude-code/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![NPM](https://img.shields.io/badge/NPM-@anthropic--ai%2Fclaude--code-red)](https://www.npmjs.com/package/@anthropic-ai/claude-code) [![Auto-Updated](https://img.shields.io/badge/Auto--Updated-Every%202%20Days-brightgreen)](#auto-update-pipeline)
+[![Official Docs](https://img.shields.io/badge/Official_Docs-code.claude.com-blue)](https://code.claude.com/docs/en/overview) [![GitHub](https://img.shields.io/badge/GitHub-anthropics%2Fclaude--code-black)](https://github.com/anthropics/claude-code) [![NPM](https://img.shields.io/badge/NPM-@anthropic--ai%2Fclaude--code-red)](https://www.npmjs.com/package/@anthropic-ai/claude-code) [![Auto-Updated](https://img.shields.io/badge/Auto--Updated-Every%202%20Days-brightgreen)](#auto-update-pipeline)
 
-**Quick Links:** [Get Started](#what-is-claude-code) · [Commands](#quick-reference) · [MCP Setup](https://docs.claude.com/en/docs/claude-code/mcp) · [Settings](https://docs.claude.com/en/docs/claude-code/settings) · [SDK](https://docs.claude.com/en/docs/claude-code/sdk) · [Changelog](#changelog)
+**Quick Links:** [Get Started](#what-is-claude-code) · [Commands](#quick-reference) · [MCP Setup](https://code.claude.com/docs/en/mcp) · [Settings](https://code.claude.com/docs/en/settings) · [SDK](https://code.claude.com/docs/en/sdk) · [Changelog](#changelog)
 
-> **🔄 Live Guide**: Auto-updated every 2 days from [official docs](https://docs.claude.com/en/docs/claude-code/overview), [GitHub releases](https://github.com/anthropics/claude-code/releases), and [Anthropic changelog](https://www.anthropic.com/changelog). See [update-log.md](./update-log.md).
+> **🔄 Live Guide**: Auto-updated every 2 days from [official docs](https://code.claude.com/docs/en/overview), [GitHub releases](https://github.com/anthropics/claude-code/releases), and [Anthropic changelog](https://www.anthropic.com/changelog). See [update-log.md](./update-log.md).
 
-> **🤖 For AI Agents**: Optimized for both humans and AI. `[OFFICIAL]` = from docs.claude.com. `[COMMUNITY]` = observed patterns. `[EXPERIMENTAL]` = unverified.
+> **🤖 For AI Agents**: Optimized for both humans and AI. `[OFFICIAL]` = from code.claude.com. `[COMMUNITY]` = observed patterns. `[EXPERIMENTAL]` = unverified.
 
 ---
 
@@ -24,11 +24,28 @@
 
 **Installation:**
 ```bash
+# Quick Install (macOS, Linux, WSL)
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Windows PowerShell
+irm https://claude.ai/install.ps1 | iex
+
+# Windows CMD
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+
+# Alternative: Homebrew (macOS/Linux)
+brew install --cask claude-code
+
+# Alternative: WinGet (Windows)
+winget install Anthropic.ClaudeCode
+
+# Alternative: NPM
 npm install -g @anthropic-ai/claude-code
+
 claude --version  # Verify installation
 ```
 
-**Official Documentation:** https://docs.claude.com/en/docs/claude-code/overview
+**Official Documentation:** https://code.claude.com/docs/en/overview
 
 ---
 
@@ -73,7 +90,7 @@ claude --resume <id>      # Resume specific session
 /plugin                  # Manage plugins
 ```
 
-**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference)
 
 ### CLI Flags Reference [OFFICIAL]
 
@@ -117,7 +134,7 @@ claude --resume abc123 --model claude-opus-4
 claude --print "run tests" --no-color --output-format json
 ```
 
-**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference)
 
 ### Core Tools [OFFICIAL]
 
@@ -136,7 +153,7 @@ claude --print "run tests" --no-color --output-format json
 | **NotebookEdit** | Edit Jupyter notebooks | Yes |
 | **NotebookRead** | Read Jupyter notebooks | No |
 
-**Source:** [Settings Reference](https://docs.claude.com/en/docs/claude-code/settings)
+**Source:** [Settings Reference](https://code.claude.com/docs/en/settings)
 
 ---
 
@@ -167,7 +184,7 @@ $ claude
 - **Incremental Trust**: Asks permission as needed for new operations
 - **Scriptable**: Can be automated via SDK
 
-**Source:** [Overview](https://docs.claude.com/en/docs/claude-code/overview)
+**Source:** [Overview](https://code.claude.com/docs/en/overview)
 
 ### 2. Permission Model [OFFICIAL]
 
@@ -216,7 +233,7 @@ Create `.claude/settings.json` in your project or `~/.claude/settings.json` glob
 }
 ```
 
-**Source:** [Settings](https://docs.claude.com/en/docs/claude-code/settings)
+**Source:** [Settings](https://code.claude.com/docs/en/settings)
 
 ### 3. Project Context - CLAUDE.md [COMMUNITY]
 
@@ -525,7 +542,7 @@ WebSearch query="React 19 new features 2024"
 - Check for known issues or solutions
 - Verify latest framework features
 
-**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference), [Settings](https://docs.claude.com/en/docs/claude-code/settings)
+**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference), [Settings](https://code.claude.com/docs/en/settings)
 
 #### LSP Tool (Language Server Protocol) [OFFICIAL]
 **Purpose:** Get code intelligence features like go-to-definition, find references, and hover documentation.
@@ -573,7 +590,7 @@ LSP operation="goToDefinition"
 
 **Note:** LSP servers must be configured for the file type. If no server is available for a language, an error will be returned.
 
-**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference)
 
 ### 5. Context Management [OFFICIAL]
 
@@ -619,7 +636,7 @@ Claude Code may automatically compact when:
 - Many old file reads are present
 - Session has been very long
 
-**Source:** [Settings](https://docs.claude.com/en/docs/claude-code/settings)
+**Source:** [Settings](https://code.claude.com/docs/en/settings)
 
 ### 6. Workspace Management [OFFICIAL]
 
@@ -680,7 +697,7 @@ Customize what information appears in your status line:
 - See active background processes
 - Understand which tools are being used
 
-**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference)
 
 ---
 
@@ -797,7 +814,7 @@ This configuration:
 # Claude will read and summarize your project context
 ```
 
-**Source:** [Quickstart](https://docs.claude.com/en/docs/claude-code/quickstart), [Settings](https://docs.claude.com/en/docs/claude-code/settings)
+**Source:** [Quickstart](https://code.claude.com/docs/en/quickstart), [Settings](https://code.claude.com/docs/en/settings)
 
 ---
 
@@ -835,7 +852,7 @@ Press Tab to toggle thinking mode on/off for subsequent prompts
 - Thinking content is visible in `Ctrl+O` transcript mode
 - Thinking mode is sticky - stays on until toggled off
 
-**Source:** [Thinking Mode](https://docs.claude.com/en/docs/claude-code/thinking-mode)
+**Source:** [Thinking Mode](https://code.claude.com/docs/en/thinking-mode)
 
 ### Plan Mode [OFFICIAL]
 
@@ -862,7 +879,7 @@ Plan Mode provides structured planning with model selection for complex tasks.
 3. Claude executes the plan step by step
 4. Progress is tracked with TodoWrite
 
-**Source:** [Plan Mode](https://docs.claude.com/en/docs/claude-code/plan-mode)
+**Source:** [Plan Mode](https://code.claude.com/docs/en/plan-mode)
 
 ### Background Tasks & Agents [OFFICIAL]
 
@@ -905,7 +922,7 @@ Ctrl+B  # Background current command or agent (unified shortcut)
 - Multiple concurrent background processes
 - Output persisted to files for large outputs
 
-**Source:** [Background Tasks](https://docs.claude.com/en/docs/claude-code/background-tasks)
+**Source:** [Background Tasks](https://code.claude.com/docs/en/background-tasks)
 
 ### Keyboard Shortcuts [OFFICIAL]
 
@@ -1061,8 +1078,17 @@ Recent settings additions (configure in `/config` or `settings.json`):
   "fileSuggestion": "custom-cmd",  // Custom @ file search command
 
   // Session behavior
-  "companyAnnouncements": true  // Show startup announcements
+  "companyAnnouncements": true,  // Show startup announcements
+
+  // Plan mode [NEW]
+  "plansDirectory": ".claude/plans"  // Custom directory for plan files
 }
+```
+
+**Skills Variable Substitution:** [NEW]
+```markdown
+# In skill files, use ${CLAUDE_SESSION_ID} for session-specific operations
+Session ID: ${CLAUDE_SESSION_ID}
 ```
 
 **Project Rules:**
@@ -1365,7 +1391,7 @@ Structure your SKILL.md:
 
 **Use Slash Commands when:** You have specific workflows you invoke repeatedly
 
-**Source:** [Agent Skills](https://docs.claude.com/en/docs/claude-code/skills)
+**Source:** [Agent Skills](https://code.claude.com/docs/en/skills)
 
 ---
 
@@ -1722,7 +1748,7 @@ MCP servers can expose prompts as slash commands automatically:
 
 This becomes available as `/search-docs` in Claude Code.
 
-**Source:** [CLI Reference](https://docs.claude.com/en/docs/claude-code/cli-reference)
+**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference)
 
 ---
 
@@ -2323,7 +2349,7 @@ rm -f /tmp/claude-pre-$$.json /tmp/claude-time-$$.txt
 
 ---
 
-**Source:** [Hooks Reference](https://docs.claude.com/en/docs/claude-code/hooks), [Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks-guide), Community GitHub repositories
+**Source:** [Hooks Reference](https://code.claude.com/docs/en/hooks), [Hooks Guide](https://code.claude.com/docs/en/hooks-guide), Community GitHub repositories
 
 ---
 
@@ -2497,7 +2523,26 @@ You can reference MCP tools in hooks:
 }
 ```
 
-**Source:** [MCP Documentation](https://docs.claude.com/en/docs/claude-code/mcp), [Settings](https://docs.claude.com/en/docs/claude-code/settings)
+### MCP Tool Search [NEW]
+
+When MCP tool definitions exceed a threshold of the context window, they're automatically deferred via an MCPSearch tool:
+
+```bash
+# Configure tool search threshold (% of context window)
+ENABLE_TOOL_SEARCH=auto:5 claude    # Activate at 5%
+ENABLE_TOOL_SEARCH=auto:10 claude   # Activate at 10% (default)
+ENABLE_TOOL_SEARCH=true claude      # Always enabled
+ENABLE_TOOL_SEARCH=false claude     # Always disabled
+
+# Or configure in settings.json
+{
+  "permissions": {
+    "deny": ["MCPSearch"]  # Disable MCP tool search
+  }
+}
+```
+
+**Source:** [MCP Documentation](https://code.claude.com/docs/en/mcp), [Settings](https://code.claude.com/docs/en/settings)
 
 ### MCP Setup Examples [OFFICIAL]
 
@@ -2967,7 +3012,7 @@ allowedTools: [Read, Write, Edit, Bash]  # Can modify code
 }
 ```
 
-**Source:** [Sub-Agents](https://docs.claude.com/en/docs/claude-code/sub-agents)
+**Source:** [Sub-Agents](https://code.claude.com/docs/en/sub-agents)
 
 ---
 
@@ -3092,7 +3137,7 @@ Configure in `.claude/settings.json` (committed to git):
 
 When team members trust the repository, plugins install automatically.
 
-**Source:** [Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
+**Source:** [Plugins](https://code.claude.com/docs/en/plugins)
 
 ---
 
@@ -4548,7 +4593,7 @@ Claude Code operates with:
 }
 ```
 
-**Source:** [Settings](https://docs.claude.com/en/docs/claude-code/settings), [Sandboxing](https://docs.claude.com/en/docs/claude-code/sandboxing)
+**Source:** [Settings](https://code.claude.com/docs/en/settings), [Sandboxing](https://code.claude.com/docs/en/sandboxing)
 
 ---
 
@@ -4614,7 +4659,7 @@ print(response.content)
 session.end()
 ```
 
-**Source:** [SDK Overview](https://docs.claude.com/en/docs/claude-code/sdk/sdk-overview)
+**Source:** [SDK Overview](https://code.claude.com/docs/en/sdk/sdk-overview)
 
 ---
 
@@ -4695,14 +4740,14 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 ## Additional Resources
 
 ### Official Documentation [OFFICIAL]
-- **Main Docs**: https://docs.claude.com/en/docs/claude-code/overview
-- **CLI Reference**: https://docs.claude.com/en/docs/claude-code/cli-reference
-- **Settings**: https://docs.claude.com/en/docs/claude-code/settings
-- **Skills**: https://docs.claude.com/en/docs/claude-code/skills
-- **Hooks**: https://docs.claude.com/en/docs/claude-code/hooks
-- **MCP**: https://docs.claude.com/en/docs/claude-code/mcp
-- **Sub-Agents**: https://docs.claude.com/en/docs/claude-code/sub-agents
-- **Plugins**: https://docs.claude.com/en/docs/claude-code/plugins
+- **Main Docs**: https://code.claude.com/docs/en/overview
+- **CLI Reference**: https://code.claude.com/docs/en/cli-reference
+- **Settings**: https://code.claude.com/docs/en/settings
+- **Skills**: https://code.claude.com/docs/en/skills
+- **Hooks**: https://code.claude.com/docs/en/hooks
+- **MCP**: https://code.claude.com/docs/en/mcp
+- **Sub-Agents**: https://code.claude.com/docs/en/sub-agents
+- **Plugins**: https://code.claude.com/docs/en/plugins
 
 ### Community Resources [COMMUNITY]
 - **GitHub**: https://github.com/anthropics/claude-code
@@ -4712,7 +4757,7 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 ### Getting Help
 - **GitHub Issues**: https://github.com/anthropics/claude-code/issues
 - **Discord**: Check Anthropic's community channels
-- **Documentation**: https://docs.claude.com
+- **Documentation**: https://code.claude.com
 
 ---
 
@@ -4722,7 +4767,21 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.7** (January 14, 2026) - Latest
+**Version 2.1.11** (January 17, 2026) - Latest
+- 🔧 Fixed excessive MCP connection requests for HTTP/SSE transports
+
+**Version 2.1.9** (January 16, 2026)
+- ✨ `auto:N` syntax for MCP tool search auto-enable threshold (context window %)
+- 📁 `plansDirectory` setting to customize plan file storage location
+- ⌨️ External editor support (Ctrl+G) in AskUserQuestion "Other" input
+- 🔗 Session URL attribution to commits and PRs from web sessions
+- 🪝 `PreToolUse` hooks can now return `additionalContext` to the model
+- 🔧 `${CLAUDE_SESSION_ID}` string substitution for skills
+- 🐛 Fixed long sessions with parallel tool calls failing with orphan tool_result errors
+- 🐛 Fixed MCP server reconnection hanging on cached connection promise
+- 🐛 Fixed Ctrl+Z suspend not working in Kitty keyboard protocol terminals
+
+**Version 2.1.7** (January 14, 2026)
 - ⚙️ `showTurnDuration` setting to hide turn duration messages
 - 💬 Feedback ability for permission prompts
 - 📱 Inline agent response display in task notifications
@@ -4849,9 +4908,31 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 - 🤖 SDK became Claude Agent SDK
 - 🔧 `--agents` flag for dynamic subagents
 
+### Breaking Changes & Deprecations [OFFICIAL]
+
+**Version 2.1.x Breaking Changes:**
+
+| Change | Migration Path |
+|--------|----------------|
+| **Windows managed settings path** | Migrate from `C:\ProgramData\ClaudeCode\managed-settings.json` to `C:\Program Files\ClaudeCode\managed-settings.json` |
+| **@-mention MCP enable/disable removed** | Use `/mcp enable <name>` or `/mcp disable <name>` instead |
+| **Tool hook timeout increased** | Now 10 minutes (was 60 seconds) - update scripts if relying on quick timeouts |
+| **SDK minimum zod version** | Requires zod ^4.0.0 as peer dependency |
+
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.1 (January 17, 2026)**
+- Updated to v2.1.11 (latest release)
+- Added v2.1.9 through v2.1.11 changelog entries
+- Updated all documentation URLs from docs.anthropic.com to code.claude.com
+- Added new installation methods (curl scripts, Homebrew, WinGet)
+- Added MCP Tool Search `auto:N` syntax documentation
+- Added `plansDirectory` setting documentation
+- Added `${CLAUDE_SESSION_ID}` skill variable substitution
+- Added Breaking Changes & Deprecations section
+- Added PreToolUse `additionalContext` hook feature
 
 **Version 2026.1 (January 2026)**
 - Major update covering v2.0.34 through v2.1.7
@@ -4922,13 +5003,13 @@ The update can also be run manually:
 
 ## License
 
-This guide is community-maintained and not officially affiliated with Anthropic. Information is gathered from official documentation (docs.claude.com) and community experience.
+This guide is community-maintained and not officially affiliated with Anthropic. Information is gathered from official documentation (code.claude.com) and community experience.
 
-For official information, always refer to: https://docs.claude.com/en/docs/claude-code/overview
+For official information, always refer to: https://code.claude.com/docs/en/overview
 
 ---
 
 **End of Guide**
 
-> **For AI Agents**: You've reached the end of the verified Claude Code guide. All features marked `[OFFICIAL]` are documented at docs.claude.com. Features marked `[COMMUNITY]` are widely-used patterns. Content in the `[EXPERIMENTAL]` section is theoretical and should be tested before relying on it.
+> **For AI Agents**: You've reached the end of the verified Claude Code guide. All features marked `[OFFICIAL]` are documented at code.claude.com. Features marked `[COMMUNITY]` are widely-used patterns. Content in the `[EXPERIMENTAL]` section is theoretical and should be tested before relying on it.
 
