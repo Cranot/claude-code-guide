@@ -1,0 +1,6 @@
+# Temporary backup during updates
+.README.backup.md
+
+# OS files
+.DS_Store
+Thumbs.db
