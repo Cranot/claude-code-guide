@@ -77,7 +77,7 @@ claude --resume <id>      # Resume specific session
 /help                     # Show available commands
 /exit                     # End session
 /compact                  # Reduce context size
-/microcompact            # Smart context cleanup (NEW)
+/compact [instructions]  # Compact conversation with optional focus instructions
 
 # Background Tasks
 /bashes                   # List background processes
@@ -97,25 +97,64 @@ claude --resume <id>      # Resume specific session
 ```bash
 # Output Control
 claude -p, --print "task"          # Print mode: non-interactive, prints result and exits
-claude --output-format json         # Output format: json, markdown, or text
-claude --no-color                   # Disable colored output
+claude --output-format json         # Output format: text, json, or stream-json
+claude --input-format text          # Input format: text or stream-json
+claude --verbose                    # Enable verbose logging (full turn-by-turn output)
 
 # Session Management
 claude --continue                   # Continue from last session
-claude --resume <session-id>        # Resume specific session by ID
-claude --list-sessions              # List all available sessions
+claude --resume <session-id>        # Resume specific session by ID or name
+claude --fork-session               # Create new session ID instead of reusing original
+claude --session-id <uuid>          # Use specific session ID (must be valid UUID)
+
+# Remote Sessions (claude.ai subscribers)
+claude --remote "task"              # Create web session on claude.ai
+claude --teleport                   # Resume web session in local terminal
 
 # Debugging & Logging
-claude --debug                      # Enable debug mode with verbose logging
-claude --log-level <level>          # Set log level: error, warn, info, debug, trace
+claude --debug                      # Enable debug mode (with optional category filtering)
+claude --debug "api,mcp"            # Debug specific categories
+claude --debug "!statsig,!file"     # Exclude categories with !
 
-# Model & Configuration
-claude --model <model-name>         # Specify model to use
-claude --config <path>              # Use custom config file
+# Model & Agent Configuration
+claude --model <name>               # Specify model (sonnet, opus, haiku, or full name)
+claude --fallback-model <name>      # Fallback model when default overloaded (print mode)
+claude --agent <name>               # Specify custom agent (overrides settings)
+claude --agents '<json>'            # Define custom subagents dynamically via JSON
 
-# Sandboxing (macOS/Linux)
-claude --sandbox                    # Enable sandbox mode for security
-claude --no-sandbox                 # Disable sandbox mode
+# System Prompt Customization
+claude --system-prompt "prompt"     # Replace entire default system prompt
+claude --system-prompt-file <path>  # Replace with file contents (print mode only)
+claude --append-system-prompt "..."  # Append to default system prompt
+claude --append-system-prompt-file <path>  # Append file contents (print mode only)
+
+# Tool & Permission Management
+claude --tools "Bash,Read,Edit"     # Restrict built-in tools (use "" to disable all)
+claude --allowedTools "Bash(git:*)" # Tools that execute without prompting
+claude --disallowedTools "Edit"     # Tools removed from context
+claude --permission-mode plan       # Begin in specified permission mode
+claude --dangerously-skip-permissions  # Skip all permission prompts ⚠️
+
+# Budget & Execution Limits (print mode)
+claude --max-budget-usd 5.00        # Maximum dollar amount for API calls
+claude --max-turns 3                # Limit number of agentic turns
+
+# Directory & Configuration
+claude --add-dir ../apps ../lib     # Add additional working directories
+claude --plugin-dir ./my-plugins    # Load plugins from directories
+claude --settings ./settings.json   # Path to settings JSON file
+claude --mcp-config ./mcp.json      # Load MCP servers from JSON file
+claude --strict-mcp-config          # Only use MCP servers from --mcp-config
+
+# IDE & Browser Integration
+claude --ide                        # Auto-connect to IDE on startup
+claude --chrome                     # Enable Chrome browser integration
+claude --no-chrome                  # Disable Chrome browser integration
+
+# Other Options
+claude --disable-slash-commands     # Disable all skills and slash commands
+claude --no-session-persistence     # Disable session persistence (print mode)
+claude --betas interleaved-thinking # Beta headers for API requests
 ```
 
 **Common Flag Combinations:**
@@ -124,14 +163,20 @@ claude --no-sandbox                 # Disable sandbox mode
 # One-off task with JSON output
 claude --print "analyze this code" --output-format json
 
-# Debug session with custom config
-claude --debug --config .claude/custom-settings.json
+# Debug MCP and API issues
+claude --debug "api,mcp"
 
 # Resume session with specific model
-claude --resume abc123 --model claude-opus-4
+claude --resume auth-refactor --model opus
 
-# Non-interactive with no color (CI/CD)
-claude --print "run tests" --no-color --output-format json
+# Non-interactive with budget limit (CI/CD)
+claude -p --max-budget-usd 5.00 --output-format json "run tests"
+
+# Custom subagents for specialized work
+claude --agents '{"reviewer":{"description":"Code reviewer","prompt":"Review for bugs"}}'
+
+# Remote session for claude.ai subscribers
+claude --remote "fix the login bug"
 ```
 
 **Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference)
@@ -599,8 +644,8 @@ Claude Code maintains conversation context with smart management:
 #### Context Commands
 
 ```bash
-/compact          # Reduce context by removing old information
-/microcompact     # Smart cleanup (NEW - keeps CLAUDE.md, current work)
+/compact                   # Reduce context by removing old information
+/compact "keep auth work"  # Compact with focus instructions (keeps specified context)
 ```
 
 #### When to Use
@@ -610,10 +655,11 @@ Claude Code maintains conversation context with smart management:
 - "Context too large" errors
 - You've completed a major task and want to start fresh
 
-**Use /microcompact when:**
+**Use /compact with instructions when:**
 - Context is getting large but you want to preserve recent work
 - Switching between related tasks
 - You want intelligent cleanup without losing important context
+- Example: `/compact "keep the authentication implementation context"`
 
 #### What Gets Preserved vs Cleared
 
@@ -1406,9 +1452,8 @@ Structure your SKILL.md:
 /help              # Show all available commands
 /exit              # End current session
 /clear             # Clear conversation history
-/compact           # Reduce context size
-/microcompact      # Smart context cleanup (keeps CLAUDE.md, current work)
-/rewind            # Undo code changes in conversation (NEW)
+/compact [instr]   # Compact context (optionally specify what to focus on)
+/rewind            # Undo code changes in conversation
 
 # Session & History
 /rename <name>     # Give current session a name (NEW)
@@ -1425,35 +1470,52 @@ Structure your SKILL.md:
 /kill <id>         # Stop a background process
 
 # Discovery & Debugging
+/bug               # Report bugs (sends conversation to Anthropic)
 /commands          # List all slash commands
 /hooks             # Show configured hooks
 /skills            # List available Skills
 /plugin            # Plugin management interface
-/context           # View current context usage and visualization (NEW)
-/doctor            # Run diagnostics and validation (NEW)
+/context           # View current context usage as a colored grid
+/cost              # Show token usage statistics
+/doctor            # Run diagnostics (shows Updates section with auto-update channel)
 
 # Configuration
-/config            # General settings (with search) (NEW)
-/settings          # Alias for /config (NEW)
-/permissions       # Manage tool permissions (with search) (NEW)
-/status            # Show session status
+/config            # General settings (type to search and filter)
+/permissions       # Manage tool permissions (with search)
+/privacy-settings  # View and update privacy settings
+/status            # Show session status (Status tab)
 /statusline        # Configure status line display
 /model             # Switch between models
+/output-style      # Set output style directly or from selection menu
 /theme             # Theme picker (Ctrl+T toggles syntax highlighting)
-/terminal-setup    # Configure terminal (Kitty, Alacritty, Zed, Warp) (NEW)
+/terminal-setup    # Configure terminal (Kitty, Alacritty, Zed, Warp)
+/vim               # Enter vim mode for alternating insert/command modes
+/sandbox           # Enable sandboxed bash with filesystem/network isolation
 
 # Workspace Management
 /add-dir <path>    # Add additional directory to workspace
-/memory            # Manage CLAUDE.md project context
+/agents            # Manage custom AI subagents
+/init              # Initialize project with CLAUDE.md guide
+/memory            # Edit CLAUDE.md memory files
+/install-github-app # Set up Claude GitHub Actions for repository
+/pr-comments       # View pull request comments
+/review            # Request code review
+/security-review   # Complete security review of pending changes
+/todos             # List current TODO items
 
 # MCP Server Management
-/mcp               # MCP server management interface
-/mcp enable <srv>  # Enable an MCP server (NEW)
-/mcp disable <srv> # Disable an MCP server (NEW)
+/mcp               # MCP server management and OAuth authentication
+/mcp enable <srv>  # Enable an MCP server
+/mcp disable <srv> # Disable an MCP server
 
 # Remote Sessions (claude.ai subscribers)
-/teleport          # Connect to remote session (NEW)
-/remote-env        # Configure remote environment (NEW)
+/teleport          # Resume remote session from claude.ai by session ID
+/remote-env        # Configure remote session environment
+
+# Account & Updates
+/login             # Switch Anthropic accounts
+/logout            # Sign out from Anthropic account
+/release-notes     # View release notes
 
 # Plan Mode
 /plan              # Enter plan mode for structured planning
@@ -2373,41 +2435,70 @@ MCP allows Claude Code to:
 - Access design files (Figma)
 - Manage project tasks (Jira, Linear)
 
-### MCP Server Configuration [OFFICIAL]
+### MCP Server Installation [OFFICIAL]
 
-MCP servers are configured in `.claude/agents/` directory:
+MCP servers can be added via CLI or configuration files:
 
-**Structure:**
+**CLI Installation (Recommended):**
 ```bash
-.claude/agents/
-├── mcp.json          # Server definitions
-└── server-name/      # Optional: custom server code
+# Remote HTTP Server (recommended for hosted services)
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+claude mcp add --transport http github https://api.githubcopilot.com/mcp/
+
+# With authentication headers
+claude mcp add --transport http secure-api https://api.example.com/mcp \
+  --header "Authorization: Bearer your-token"
+
+# Local Stdio Server (for local packages)
+claude mcp add --transport stdio airtable -- npx -y airtable-mcp-server
+claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server-postgres "$DATABASE_URL"
+
+# With environment variables
+claude mcp add --transport stdio --env AIRTABLE_API_KEY=your_key airtable -- npx -y airtable-mcp-server
+
+# Windows (requires cmd /c wrapper)
+claude mcp add --transport stdio myserver -- cmd /c npx -y @some/package
 ```
 
-**Example: `.claude/agents/mcp.json`**
+**MCP Server Management:**
+```bash
+claude mcp list              # List all configured servers
+claude mcp get github        # Get details for specific server
+claude mcp remove github     # Remove a server
+/mcp                         # Interactive management in Claude Code
+```
+
+**Installation Scopes:**
+```bash
+# Local scope (default) - stored in ~/.claude.json under project path
+claude mcp add --transport http stripe https://mcp.stripe.com
+
+# Project scope - stored in .mcp.json (shared via git)
+claude mcp add --scope project --transport http paypal https://mcp.paypal.com/mcp
+
+# User scope - stored in ~/.claude.json (available across all projects)
+claude mcp add --scope user --transport http hubspot https://mcp.hubspot.com
+```
+
+**Configuration File (`.mcp.json`):**
 ```json
 {
   "mcpServers": {
-    "google-drive": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-google-drive"
-      ],
-      "env": {
-        "GOOGLE_DRIVE_CLIENT_ID": "${GOOGLE_DRIVE_CLIENT_ID}",
-        "GOOGLE_DRIVE_CLIENT_SECRET": "${GOOGLE_DRIVE_CLIENT_SECRET}"
-      }
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
     },
     "postgres": {
+      "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-postgres",
-        "postgresql://user:pass@localhost/db"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "${DATABASE_URL}"],
+      "env": {
+        "DB_URL": "${DB_URL}",
+        "API_KEY": "${API_KEY:-default-value}"
+      }
     },
     "slack": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-slack"],
       "env": {
@@ -2421,14 +2512,24 @@ MCP servers are configured in `.claude/agents/` directory:
 
 ### OAuth Authentication [OFFICIAL]
 
-MCP servers can use OAuth for secure authentication:
+Many MCP servers support OAuth for secure authentication:
 
+```bash
+# Add server that requires OAuth
+claude mcp add --transport http sentry https://mcp.sentry.dev/mcp
+
+# Within Claude Code, authenticate via browser
+/mcp
+# Follow browser steps to complete OAuth login
+```
+
+**Manual OAuth Configuration:**
 ```json
 {
   "mcpServers": {
     "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
       "oauth": {
         "provider": "github",
         "scopes": ["repo", "read:user"]
@@ -2438,7 +2539,7 @@ MCP servers can use OAuth for secure authentication:
 }
 ```
 
-Claude Code will guide you through OAuth flow on first use.
+Claude Code opens a browser to complete the OAuth flow on first use.
 
 ### Using MCP Tools [OFFICIAL]
 
@@ -3976,7 +4077,7 @@ One hour configuring `.claude/` saves hundreds of hours across future sessions. 
 # Context is getting large
 
 # Use microcompact for intelligent cleanup
-/microcompact
+/compact "focus"
 # Keeps: Current auth work, recent changes, patterns learned
 # Removes: Old file reads, completed searches, stale context
 
@@ -4262,7 +4363,7 @@ Quick decision trees for common scenarios:
 > /compact
 
 # Solution 2: Smart cleanup
-> /microcompact
+> /compact "focus"
 
 # Prevention: Regular compaction in long sessions
 ```
@@ -4386,7 +4487,7 @@ Quick decision trees for common scenarios:
 # When "context too large" appears during complex work:
 
 # Quick recovery:
-> /microcompact
+> /compact "focus"
 > "Continue with [brief task summary]"
 
 # Full reset if needed:
@@ -4394,7 +4495,7 @@ Quick decision trees for common scenarios:
 > "Let me brief you: [key context]"
 
 # Prevention:
-- Use /microcompact every ~50 operations
+- Use /compact "focus" every ~50 operations
 - Start fresh sessions for new features
 ```
 
@@ -4767,7 +4868,10 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.11** (January 17, 2026) - Latest
+**Version 2.1.12** (January 17, 2026) - Latest
+- 🔧 Fixed message rendering bug
+
+**Version 2.1.11** (January 17, 2026)
 - 🔧 Fixed excessive MCP connection requests for HTTP/SSE transports
 
 **Version 2.1.9** (January 16, 2026)
@@ -4922,6 +5026,26 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.2 (January 18, 2026)**
+- Updated to v2.1.12 (latest release with message rendering fix)
+- Expanded CLI flags reference with 30+ new flags including:
+  - Remote session flags (`--remote`, `--teleport`, `--fork-session`)
+  - System prompt customization (`--system-prompt`, `--append-system-prompt`)
+  - Tool/permission management (`--tools`, `--allowedTools`, `--permission-mode`)
+  - Budget limits (`--max-budget-usd`, `--max-turns`)
+  - MCP configuration (`--mcp-config`, `--strict-mcp-config`)
+- Added 15+ new slash commands from official docs:
+  - `/bug`, `/cost`, `/privacy-settings`, `/output-style`, `/vim`, `/sandbox`
+  - `/agents`, `/init`, `/install-github-app`, `/pr-comments`, `/review`
+  - `/security-review`, `/todos`, `/login`, `/logout`, `/release-notes`
+- Rewrote MCP Installation section with new transport types:
+  - HTTP transport (recommended for hosted services)
+  - Stdio transport (for local packages)
+  - Installation scopes (local, project, user)
+  - CLI commands (`claude mcp add/list/get/remove`)
+- Fixed `/microcompact` references (now `/compact` with optional instructions)
+- Updated OAuth authentication examples for MCP
 
 **Version 2026.1.1 (January 17, 2026)**
 - Updated to v2.1.11 (latest release)
