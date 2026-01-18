@@ -105,7 +105,11 @@ EOF
 )"
 
     echo ""
-    echo "Commit created successfully!"
+    echo "Commit created! Pushing to remote..."
+    git push origin main
+
+    echo ""
+    echo "Changes pushed successfully!"
     echo "$(date -u '+%Y-%m-%d'): Guide updated - see git log for details" >> "$LOG_FILE"
 fi
 
