@@ -1,0 +1,10 @@
+{
+  "updates": [
+    {
+      "date": "2026-01-18T10:00:56Z",
+      "release": "v2.1.12",
+      "description": "Updated the README.md with new information from Claude Code v2.1.10: Added the new `Setup` hook event (triggered via `--init`, `--init-only`, or `--maintenance` CLI flags), the `PermissionRequest` hook event, keyboard shortcut 'c' for copying OAuth URL during login, VSCode plugin features (install count display and trust warnings). Added v2.1.10 to the CLI changelog with all its features and fixes. Updated the Auto-Update Pipeline section to use the new code.claude.com documentation URL. Fixed a table formatting issue in the hook events section. All changes verified from official GitHub releases page.",
+      "sections": "[Changelog, Hook Events, Keyboard Shortcuts, Plugins (VSCode Features), This Guide's Changelog, Auto-Update Pipeline]"
+    }
+  ]
+}

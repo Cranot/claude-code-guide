@@ -1013,6 +1013,11 @@ Ctrl+B  # Background current command or agent (unified shortcut)
 | `p` / `P` | Paste |
 | `Alt+B` / `Alt+F` | Word navigation |
 
+**Login & Authentication:** [NEW]
+| Shortcut | Action |
+|----------|--------|
+| `c` | Copy OAuth URL during login |
+
 ### Prompt Suggestions [OFFICIAL]
 
 Claude Code suggests prompts based on context (enabled by default).
@@ -1859,11 +1864,13 @@ Hooks are configured in `.claude/settings.json` or `~/.claude/settings.json`:
 
 | Event | When It Fires | Can Block |
 |-------|---------------|-----------|
+| **Setup** [NEW] | Via `--init`, `--init-only`, or `--maintenance` flags | No |
 | **SessionStart** | Session begins | No |
 | **SessionEnd** | Session ends | No |
 | **UserPromptSubmit** | User sends message | Yes |
 | **PreToolUse** | Before tool execution | Yes |
 | **PostToolUse** | After tool completes | No |
+| **PermissionRequest** | When user permission dialog is shown | Yes |
 | **Stop** | Claude considers stopping | Yes |
 | **SubagentStop** | Sub-agent considers stopping | Yes |
 | **Notification** | Claude sends notification | No |
@@ -3237,6 +3244,12 @@ Configure in `.claude/settings.json` (committed to git):
 ```
 
 When team members trust the repository, plugins install automatically.
+
+### VSCode Plugin Features [NEW]
+
+When using Claude Code in VSCode:
+- **Install count display**: See how many users have installed each plugin
+- **Trust warnings**: Security prompts when installing plugins from untrusted sources
 
 **Source:** [Plugins](https://code.claude.com/docs/en/plugins)
 
@@ -4874,6 +4887,14 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 **Version 2.1.11** (January 17, 2026)
 - 🔧 Fixed excessive MCP connection requests for HTTP/SSE transports
 
+**Version 2.1.10** (January 17, 2026) [NEW]
+- 🪝 New `Setup` hook event triggered via `--init`, `--init-only`, or `--maintenance` CLI flags
+- ⌨️ Keyboard shortcut 'c' to copy OAuth URL during login
+- 🐛 Fixed bash commands with heredocs containing JavaScript template literals
+- ⚡ Improved startup to capture keystrokes before REPL is ready
+- 📎 File suggestions now show as removable attachments
+- 🔌 [VSCode] Added install count display and trust warning for plugins
+
 **Version 2.1.9** (January 16, 2026)
 - ✨ `auto:N` syntax for MCP tool search auto-enable threshold (context window %)
 - 📁 `plansDirectory` setting to customize plan file storage location
@@ -5027,6 +5048,14 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 
 ### This Guide's Changelog
 
+**Version 2026.1.3 (January 18, 2026)**
+- Added v2.1.10 changelog (Setup hook, OAuth copy shortcut, VSCode plugin features)
+- Added new `Setup` hook event for `--init`, `--init-only`, `--maintenance` flags
+- Added `PermissionRequest` hook event documentation
+- Added keyboard shortcut 'c' for copying OAuth URL during login
+- Added VSCode plugin features section (install count display, trust warnings)
+- Fixed hook events table to include all documented events
+
 **Version 2026.1.2 (January 18, 2026)**
 - Updated to v2.1.12 (latest release with message rendering fix)
 - Expanded CLI flags reference with 30+ new flags including:
@@ -5097,9 +5126,8 @@ This guide is a **living document** that automatically stays current with Claude
 A bi-daily pipeline (every 2 days at 3am UTC) runs Claude Code to:
 
 1. **Check official sources:**
-   - [Anthropic Docs](https://docs.anthropic.com/en/docs/claude-code) - Official documentation
+   - [Official Docs](https://code.claude.com/docs/en/overview) - Official documentation
    - [GitHub Releases](https://github.com/anthropics/claude-code/releases) - Version changelog
-   - [Anthropic News](https://www.anthropic.com/news) - Announcements
    - [Anthropic Changelog](https://www.anthropic.com/changelog) - Product updates
 
 2. **Compare against current guide content**
