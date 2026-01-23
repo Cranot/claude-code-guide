@@ -39,7 +39,7 @@ brew install --cask claude-code
 # Alternative: WinGet (Windows)
 winget install Anthropic.ClaudeCode
 
-# Alternative: NPM
+# Alternative: NPM (⚠️ Deprecated - use native install instead)
 npm install -g @anthropic-ai/claude-code
 
 claude --version  # Verify installation
@@ -524,6 +524,8 @@ TodoWrite todos=[
 - `"pending"` - Not started yet
 - `"in_progress"` - Currently working on (should be only ONE at a time)
 - `"completed"` - Finished successfully
+
+**Dependency Tracking** [NEW]: v2.1.16 introduced task dependency tracking, allowing tasks to define prerequisites that must complete before they start. This enables complex multi-step workflows with proper sequencing.
 
 **Best Practices:**
 - Use for multi-step tasks (3+ steps)
@@ -1013,10 +1015,15 @@ Ctrl+B  # Background current command or agent (unified shortcut)
 | `p` / `P` | Paste |
 | `Alt+B` / `Alt+F` | Word navigation |
 
-**Login & Authentication:** [NEW]
+**Login & Authentication:**
 | Shortcut | Action |
 |----------|--------|
 | `c` | Copy OAuth URL during login |
+
+**Bash Mode Autocomplete** [NEW v2.1.14]:
+| Shortcut | Action |
+|----------|--------|
+| `!` + `Tab` | History-based autocomplete - complete partial commands from history |
 
 ### Prompt Suggestions [OFFICIAL]
 
@@ -3153,6 +3160,19 @@ Plugins are packages that extend Claude Code:
 - Enable/disable plugins
 - Remove plugins
 - Add custom marketplaces
+- Search installed plugins [v2.1.14]
+```
+
+**Plugin Pinning** [NEW v2.1.14]: Plugins can now be pinned to specific git commit SHAs for version stability:
+
+```json
+{
+  "plugins": {
+    "enabledPlugins": {
+      "security-toolkit@official#abc123def": true
+    }
+  }
+}
 ```
 
 ### Plugin Structure [OFFICIAL]
@@ -3250,6 +3270,9 @@ When team members trust the repository, plugins install automatically.
 When using Claude Code in VSCode:
 - **Install count display**: See how many users have installed each plugin
 - **Trust warnings**: Security prompts when installing plugins from untrusted sources
+- **Native plugin management** [v2.1.16]: Built-in plugin management support in VSCode extension
+- **Remote session browsing** [v2.1.16]: OAuth users can browse and resume remote Claude sessions directly from the Sessions dialog
+- **`/usage` command** [v2.1.14]: Display current plan usage directly in VSCode
 
 **Source:** [Plugins](https://code.claude.com/docs/en/plugins)
 
@@ -4881,13 +4904,41 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.12** (January 17, 2026) - Latest
+**Version 2.1.17** (January 22, 2026) - Latest
+- 🔧 Fixed crashes on processors without AVX instruction support
+
+**Version 2.1.16** (January 22, 2026)
+- ✨ New task management system with dependency tracking
+- 🔌 [VSCode] Native plugin management support
+- 🔌 [VSCode] OAuth users can browse and resume remote Claude sessions from Sessions dialog
+- 🐛 Fixed out-of-memory crashes when resuming sessions with heavy subagent usage
+- 🐛 Fixed "context remaining" warning not hiding after running `/compact`
+- 🐛 Fixed session titles on resume screen not respecting user's language setting
+- 🪟 [IDE] Fixed race condition on Windows where Claude Code sidebar view container would not appear on start
+
+**Version 2.1.15** (January 21, 2026)
+- ⚠️ Added deprecation notification for npm installations - users directed to run `claude install` or visit https://docs.anthropic.com/en/docs/claude-code/getting-started
+- ⚡ Improved UI rendering performance with React Compiler
+- 🐛 Fixed "Context left until auto-compact" warning not disappearing after `/compact`
+- 🐛 Fixed MCP stdio server timeout not killing child process, causing UI freezes
+
+**Version 2.1.14** (January 20, 2026)
+- ⌨️ History-based autocomplete in bash mode (`!`) - press Tab to complete partial commands
+- 🔍 Added search to installed plugins list
+- 📌 Support for pinning plugins to specific git commit SHAs
+- 🔧 Fixed context window blocking limit calculated too aggressively (~65% instead of ~98%)
+- 🐛 Fixed memory issues causing crashes with parallel subagents
+- 🐛 Fixed memory leak in long-running sessions with stream resource cleanup
+- 🐛 Fixed `@` symbol triggering file autocomplete in bash mode
+- 📊 [VSCode] Added `/usage` command to display current plan usage
+
+**Version 2.1.12** (January 17, 2026)
 - 🔧 Fixed message rendering bug
 
 **Version 2.1.11** (January 17, 2026)
 - 🔧 Fixed excessive MCP connection requests for HTTP/SSE transports
 
-**Version 2.1.10** (January 17, 2026) [NEW]
+**Version 2.1.10** (January 17, 2026)
 - 🪝 New `Setup` hook event triggered via `--init`, `--init-only`, or `--maintenance` CLI flags
 - ⌨️ Keyboard shortcut 'c' to copy OAuth URL during login
 - 🐛 Fixed bash commands with heredocs containing JavaScript template literals
@@ -5047,6 +5098,19 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.4 (January 23, 2026)**
+- Updated to v2.1.17 (latest release with AVX instruction fix)
+- Added v2.1.14 through v2.1.17 changelog entries:
+  - v2.1.17: Fixed crashes on processors without AVX instruction support
+  - v2.1.16: New task management system with dependency tracking, VSCode native plugin management, OAuth session browsing
+  - v2.1.15: npm installation deprecation notice, React Compiler performance improvements
+  - v2.1.14: History-based autocomplete in bash mode, plugin pinning to git commit SHAs, plugin search
+- Added npm deprecation notice to installation section
+- Added TodoWrite dependency tracking documentation
+- Expanded VSCode Plugin Features section (native plugin management, remote session browsing, `/usage` command)
+- Added Bash Mode Autocomplete keyboard shortcut section
+- Added Plugin Pinning documentation for git commit SHA pinning
 
 **Version 2026.1.3 (January 18, 2026)**
 - Added v2.1.10 changelog (Setup hook, OAuth copy shortcut, VSCode plugin features)

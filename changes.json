@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-01-23T02:05:45Z",
+      "release": "v2.1.17",
+      "description": "Updated the README.md with Claude Code releases v2.1.14 through v2.1.17 (January 20-22, 2026). Key additions include: (1) Four new version entries in the changelog documenting features like the new task management system with dependency tracking, npm installation deprecation notice, history-based bash autocomplete, plugin pinning to git commit SHAs, and VSCode native plugin management with OAuth session browsing; (2) Added npm deprecation warning to the installation section; (3) Documented TodoWrite dependency tracking capability; (4) Added new \"Bash Mode Autocomplete\" keyboard shortcut section; (5) Expanded VSCode Plugin Features with native plugin management, remote session browsing, and /usage command; (6) Added Plugin Pinning documentation; (7) Updated the guide's changelog with version 2026.1.4 documenting all changes made.",
+      "sections": "[Changelog, Installation, Core Tools (TodoWrite), Keyboard Shortcuts, Plugins, VSCode Plugin Features, This Guide's Changelog]"
+    },
+    {
       "date": "2026-01-18T10:00:56Z",
       "release": "v2.1.12",
       "description": "Updated the README.md with new information from Claude Code v2.1.10: Added the new `Setup` hook event (triggered via `--init`, `--init-only`, or `--maintenance` CLI flags), the `PermissionRequest` hook event, keyboard shortcut 'c' for copying OAuth URL during login, VSCode plugin features (install count display and trust warnings). Added v2.1.10 to the CLI changelog with all its features and fixes. Updated the Auto-Update Pipeline section to use the new code.claude.com documentation URL. Fixed a table formatting issue in the hook events section. All changes verified from official GitHub releases page.",
