@@ -134,15 +134,19 @@ claude --allowedTools "Bash(git:*)" # Tools that execute without prompting
 claude --disallowedTools "Edit"     # Tools removed from context
 claude --permission-mode plan       # Begin in specified permission mode
 claude --dangerously-skip-permissions  # Skip all permission prompts ⚠️
+claude --allow-dangerously-skip-permissions  # Enable bypass option without activating [NEW]
+claude --permission-prompt-tool <mcp-tool>  # MCP tool for permission prompts (non-interactive) [NEW]
 
 # Budget & Execution Limits (print mode)
 claude --max-budget-usd 5.00        # Maximum dollar amount for API calls
 claude --max-turns 3                # Limit number of agentic turns
+claude --json-schema '<schema>'     # Get validated JSON output matching schema (print mode) [NEW]
 
 # Directory & Configuration
 claude --add-dir ../apps ../lib     # Add additional working directories
 claude --plugin-dir ./my-plugins    # Load plugins from directories
 claude --settings ./settings.json   # Path to settings JSON file
+claude --setting-sources user,project  # Comma-separated list of setting sources [NEW]
 claude --mcp-config ./mcp.json      # Load MCP servers from JSON file
 claude --strict-mcp-config          # Only use MCP servers from --mcp-config
 
@@ -151,10 +155,16 @@ claude --ide                        # Auto-connect to IDE on startup
 claude --chrome                     # Enable Chrome browser integration
 claude --no-chrome                  # Disable Chrome browser integration
 
+# Setup & Maintenance
+claude --init                       # Run Setup hooks and start interactive mode
+claude --init-only                  # Run Setup hooks and exit (no interactive session)
+claude --maintenance                # Run Setup hooks with maintenance trigger and exit
+
 # Other Options
 claude --disable-slash-commands     # Disable all skills and slash commands
 claude --no-session-persistence     # Disable session persistence (print mode)
 claude --betas interleaved-thinking # Beta headers for API requests
+claude --include-partial-messages   # Include partial streaming events (with stream-json) [NEW]
 ```
 
 **Common Flag Combinations:**
@@ -1058,6 +1068,7 @@ Enter → Submit the suggestion as-is
 | `CLAUDE_CODE_SHELL` | Override shell detection |
 | `CLAUDE_CODE_TMPDIR` | Custom temp directory |
 | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` | Disable background task system |
+| `CLAUDE_CODE_ENABLE_TASKS` | Set to `false` to use legacy task system [NEW v2.1.19] |
 
 **Display & UI:**
 | Variable | Description |
@@ -1110,6 +1121,15 @@ Enter → Submit the suggestion as-is
 | `FORCE_AUTOUPDATE_PLUGINS` | Force plugin updates |
 | `CLAUDE_CODE_EXIT_AFTER_STOP_DELAY` | Exit delay after stop |
 
+**Monitoring & Telemetry:**
+| Variable | Description |
+|----------|-------------|
+| `CLAUDE_CODE_ENABLE_TELEMETRY` | Enable OpenTelemetry collection (`1`) |
+| `OTEL_METRICS_EXPORTER` | OTel metrics exporter (e.g., `otlp`) |
+| `DISABLE_TELEMETRY` | Opt out of Statsig telemetry (`1`) |
+| `DISABLE_ERROR_REPORTING` | Opt out of Sentry error reporting (`1`) |
+| `DISABLE_COST_WARNINGS` | Disable cost warning messages (`1`) |
+
 **Advanced:**
 | Variable | Description |
 |----------|-------------|
@@ -1117,6 +1137,10 @@ Enter → Submit the suggestion as-is
 | `USE_BUILTIN_RIPGREP` | Use built-in ripgrep |
 | `CLOUD_ML_REGION` | Cloud ML region for Vertex |
 | `AWS_BEARER_TOKEN_BEDROCK` | AWS bearer token |
+| `MAX_THINKING_TOKENS` | Extended thinking budget (default: 31,999) |
+| `MAX_MCP_OUTPUT_TOKENS` | Max MCP tool response tokens (default: 25,000) |
+| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | Max output tokens (default: 32,000, max: 64,000) |
+| `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` | Disable autoupdate, bug reporting, telemetry |
 
 ### New Settings [OFFICIAL]
 
@@ -1716,6 +1740,31 @@ Include:
 **Usage:**
 ```bash
 /analyze-file "src/services/payment.ts"
+```
+
+**Indexed Arguments** [NEW v2.1.19]:
+
+Access individual arguments using bracket syntax or shorthand:
+
+```markdown
+---
+name: compare-files
+description: Compare two files
+---
+
+# Compare: $ARGUMENTS[0] vs $ARGUMENTS[1]
+
+# Shorthand syntax also available:
+# $0 = first argument
+# $1 = second argument
+
+Compare $0 and $1 for differences.
+```
+
+**Usage:**
+```bash
+/compare-files "src/v1/api.ts" "src/v2/api.ts"
+# $0 = "src/v1/api.ts", $1 = "src/v2/api.ts"
 ```
 
 #### File References with @ Syntax [OFFICIAL]
@@ -3273,6 +3322,7 @@ When using Claude Code in VSCode:
 - **Native plugin management** [v2.1.16]: Built-in plugin management support in VSCode extension
 - **Remote session browsing** [v2.1.16]: OAuth users can browse and resume remote Claude sessions directly from the Sessions dialog
 - **`/usage` command** [v2.1.14]: Display current plan usage directly in VSCode
+- **Session forking and rewind** [v2.1.19]: Fork sessions and rewind functionality now enabled for all users
 
 **Source:** [Plugins](https://code.claude.com/docs/en/plugins)
 
@@ -4904,7 +4954,23 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.17** (January 22, 2026) - Latest
+**Version 2.1.19** (January 23, 2026) - Latest
+- ✨ Added env var `CLAUDE_CODE_ENABLE_TASKS` - set to `false` to use legacy task system
+- ✨ Added shorthand `$0`, `$1`, etc. for accessing individual arguments in custom commands
+- 🔄 Changed indexed argument syntax from `$ARGUMENTS.0` to `$ARGUMENTS[0]` (bracket syntax)
+- ✅ Skills without additional permissions/hooks no longer require approval
+- 🐛 Fixed crashes on processors without AVX instruction support
+- 🐛 Fixed dangling Claude Code processes when terminal is closed (EIO error handling, SIGKILL fallback)
+- 🐛 Fixed `/rename` and `/tag` not updating correct session when resuming from different directory
+- 🐛 Fixed resuming sessions by custom title from different directories
+- 🐛 Fixed pasted text loss when using prompt stash (Ctrl+S)
+- 🐛 Fixed agent list displaying "Sonnet (default)" instead of "Inherit (default)"
+- 🐛 Fixed backgrounded hook commands not returning early
+- 🐛 Fixed file write preview omitting empty lines
+- 🔌 [SDK] Added replay of `queued_command` attachment messages as `SDKUserMessageReplay` events
+- 🔌 [VSCode] Enabled session forking and rewind functionality for all users
+
+**Version 2.1.17** (January 22, 2026)
 - 🔧 Fixed crashes on processors without AVX instruction support
 
 **Version 2.1.16** (January 22, 2026)
@@ -5098,6 +5164,27 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.5 (January 25, 2026)**
+- Updated to v2.1.19 (latest release)
+- Added v2.1.19 changelog entries:
+  - `CLAUDE_CODE_ENABLE_TASKS` env var to use legacy task system
+  - Shorthand argument syntax (`$0`, `$1`) for custom commands
+  - Changed indexed argument syntax from `$ARGUMENTS.0` to `$ARGUMENTS[0]` (bracket syntax)
+  - Skills without additional permissions/hooks no longer require approval
+  - VSCode session forking and rewind functionality for all users
+  - Multiple bug fixes (process cleanup, session resume, prompt stash, etc.)
+- Added new CLI flags from official docs:
+  - `--json-schema` for validated JSON output
+  - `--permission-prompt-tool` for MCP permission handling
+  - `--setting-sources` for configuration source control
+  - `--allow-dangerously-skip-permissions` for composable permission bypass
+  - `--include-partial-messages` for streaming events
+  - `--init`, `--init-only`, `--maintenance` Setup hook flags
+- Added indexed arguments documentation with bracket syntax and shorthand
+- Added VSCode session forking and rewind feature
+- Added monitoring/telemetry environment variables section
+- Added advanced environment variables (`MAX_THINKING_TOKENS`, `MAX_MCP_OUTPUT_TOKENS`, etc.)
 
 **Version 2026.1.4 (January 23, 2026)**
 - Updated to v2.1.17 (latest release with AVX instruction fix)

@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-01-25T02:05:10Z",
+      "release": "v2.1.19",
+      "description": "Updated the guide with Claude Code v2.1.19 release information including the new CLAUDE_CODE_ENABLE_TASKS environment variable, shorthand argument syntax ($0, $1) for custom commands, bracket syntax change for indexed arguments ($ARGUMENTS[0]), new CLI flags (--json-schema, --permission-prompt-tool, --setting-sources, --allow-dangerously-skip-permissions, --include-partial-messages, --init, --init-only, --maintenance), VSCode session forking and rewind functionality, expanded monitoring/telemetry environment variables, and multiple bug fixes. The guide changelog was updated to version 2026.1.5 documenting all additions.",
+      "sections": "Changelog, CLI Flags Reference, Environment Variables, Using Arguments (Custom Commands), VSCode Plugin Features, This Guide's Changelog"
+    },
+    {
       "date": "2026-01-23T02:05:45Z",
       "release": "v2.1.17",
       "description": "Updated the README.md with Claude Code releases v2.1.14 through v2.1.17 (January 20-22, 2026). Key additions include: (1) Four new version entries in the changelog documenting features like the new task management system with dependency tracking, npm installation deprecation notice, history-based bash autocomplete, plugin pinning to git commit SHAs, and VSCode native plugin management with OAuth session browsing; (2) Added npm deprecation warning to the installation section; (3) Documented TodoWrite dependency tracking capability; (4) Added new \"Bash Mode Autocomplete\" keyboard shortcut section; (5) Expanded VSCode Plugin Features with native plugin management, remote session browsing, and /usage command; (6) Added Plugin Pinning documentation; (7) Updated the guide's changelog with version 2026.1.4 documenting all changes made.",
