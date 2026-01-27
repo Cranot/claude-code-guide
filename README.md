@@ -1102,6 +1102,7 @@ Enter → Submit the suggestion as-is
 | Variable | Description |
 |----------|-------------|
 | `CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS` | Max tokens for file reads |
+| `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` | Set to `1` to load CLAUDE.md from `--add-dir` directories [NEW] |
 | `CLAUDE_PROJECT_DIR` | Override project directory |
 | `CLAUDE_PLUGIN_ROOT` | Plugin root substitution |
 | `CLAUDE_CONFIG_DIR` | Custom config directory |
@@ -1492,9 +1493,10 @@ Structure your SKILL.md:
 /rewind            # Undo code changes in conversation
 
 # Session & History
-/rename <name>     # Give current session a name (NEW)
-/resume [name|id]  # Resume a previous session by name or ID (NEW)
+/rename <name>     # Give current session a name
+/resume [name|id]  # Resume a previous session by name or ID
 /export            # Export conversation to file
+/copy              # Copy last response to clipboard [NEW]
 
 # Usage & Stats
 /usage             # View plan limits and usage (NEW)
@@ -1920,15 +1922,17 @@ Hooks are configured in `.claude/settings.json` or `~/.claude/settings.json`:
 
 | Event | When It Fires | Can Block |
 |-------|---------------|-----------|
-| **Setup** [NEW] | Via `--init`, `--init-only`, or `--maintenance` flags | No |
-| **SessionStart** | Session begins | No |
-| **SessionEnd** | Session ends | No |
-| **UserPromptSubmit** | User sends message | Yes |
+| **Setup** | Via `--init`, `--init-only`, or `--maintenance` flags | No |
+| **SessionStart** | Session begins or resumes | No |
+| **SessionEnd** | Session terminates | No |
+| **UserPromptSubmit** | User submits a prompt | Yes |
 | **PreToolUse** | Before tool execution | Yes |
-| **PostToolUse** | After tool completes | No |
-| **PermissionRequest** | When user permission dialog is shown | Yes |
-| **Stop** | Claude considers stopping | Yes |
-| **SubagentStop** | Sub-agent considers stopping | Yes |
+| **PostToolUse** | After tool succeeds | No |
+| **PostToolUseFailure** | After tool fails [NEW] | No |
+| **PermissionRequest** | When permission dialog appears | Yes |
+| **SubagentStart** | When spawning a subagent [NEW] | No |
+| **SubagentStop** | When subagent finishes | Yes |
+| **Stop** | Claude finishes responding | Yes |
 | **Notification** | Claude sends notification | No |
 | **PreCompact** | Before context compaction | No |
 
@@ -3325,6 +3329,39 @@ When using Claude Code in VSCode:
 - **Session forking and rewind** [v2.1.19]: Fork sessions and rewind functionality now enabled for all users
 
 **Source:** [Plugins](https://code.claude.com/docs/en/plugins)
+
+### Desktop App Features [NEW]
+
+The Claude desktop app provides a native interface for running Claude Code sessions locally and integrating with Claude Code on the web.
+
+**Key Features:**
+- **Diff view**: Review Claude's changes file by file before creating a PR, with inline commenting
+- **Parallel local sessions with git worktrees**: Run multiple sessions in the same repository, each with isolated worktrees
+- **`.worktreeinclude` file**: Automatically copy gitignored files (like `.env`) to new worktrees
+- **Launch cloud sessions**: Start Claude Code on the web directly from the desktop app
+- **Bundled Claude Code version**: Includes a stable, managed version of Claude Code
+
+**Diff View:**
+- Click the diff stats indicator (`+12 -1`) to open the diff viewer
+- Click any line to add inline comments
+- Press Enter to accept each comment, Cmd+Enter to send all
+
+**Git Worktrees:**
+Create a `.worktreeinclude` file in your repository root:
+```
+.env
+.env.local
+**/.claude/settings.local.json
+```
+
+Files matching these patterns that are also in `.gitignore` will be copied to new worktrees.
+
+**Installation:**
+- macOS: https://claude.ai/api/desktop/darwin/universal/dmg/latest/redirect
+- Windows x64: https://claude.ai/api/desktop/win32/x64/exe/latest/redirect
+- Windows ARM64: https://claude.ai/api/desktop/win32/arm64/exe/latest/redirect
+
+**Source:** [Desktop Documentation](https://code.claude.com/docs/en/desktop)
 
 ---
 
@@ -4954,7 +4991,23 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.19** (January 23, 2026) - Latest
+**Version 2.1.20** (January 27, 2026) - Latest
+- ⌨️ Arrow key history navigation in vim normal mode
+- ⌨️ External editor shortcut (Ctrl+G) added to help menu
+- 📊 PR review status indicator in prompt footer (approved/changes requested/pending/draft)
+- 📁 Support for loading `CLAUDE.md` from additional directories via `--add-dir` (requires `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`)
+- 🗑️ Task deletion via `TaskUpdate` tool
+- 📱 Dynamic task list adjustment based on terminal height
+- 📋 `/copy` command now available to all users
+- ⚙️ Config backups now timestamped and rotated (keeps 5 most recent)
+- 🐛 Fixed session compaction issues causing full history to load on resume
+- 🐛 Fixed agents ignoring user messages during active work
+- 🐛 Fixed wide character (emoji, CJK) rendering artifacts
+- 🐛 Fixed JSON parsing errors with special Unicode in MCP responses
+- 🐛 Fixed draft prompt loss when navigating command history
+- 🐛 Fixed crashes when cancelling tool use
+
+**Version 2.1.19** (January 23, 2026)
 - ✨ Added env var `CLAUDE_CODE_ENABLE_TASKS` - set to `false` to use legacy task system
 - ✨ Added shorthand `$0`, `$1`, etc. for accessing individual arguments in custom commands
 - 🔄 Changed indexed argument syntax from `$ARGUMENTS.0` to `$ARGUMENTS[0]` (bracket syntax)
@@ -5164,6 +5217,27 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.6 (January 27, 2026)**
+- Updated to v2.1.20 (latest release)
+- Added v2.1.20 changelog entries:
+  - Arrow key history navigation in vim normal mode
+  - External editor shortcut (Ctrl+G) in help menu
+  - PR review status indicator in prompt footer
+  - CLAUDE.md loading from `--add-dir` directories (with env var)
+  - Task deletion via TaskUpdate tool
+  - Dynamic task list based on terminal height
+  - `/copy` command now available to all users
+  - Config backup rotation (keeps 5 most recent)
+  - Multiple bug fixes (session compaction, wide characters, MCP Unicode, etc.)
+- Added new hook events: `PostToolUseFailure`, `SubagentStart`
+- Added `/copy` slash command documentation
+- Added `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` environment variable
+- Added comprehensive Desktop App Features section:
+  - Diff view with inline commenting
+  - Git worktrees for parallel sessions
+  - `.worktreeinclude` file documentation
+  - Installation links for macOS and Windows
 
 **Version 2026.1.5 (January 25, 2026)**
 - Updated to v2.1.19 (latest release)

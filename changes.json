@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-01-27T02:04:52Z",
+      "release": "v2.1.20",
+      "description": "Updated the guide with Claude Code v2.1.20 release (January 27, 2026). Added v2.1.20 changelog with 14 entries including arrow key vim navigation, external editor shortcut in help menu, PR review status indicator, CLAUDE.md loading from --add-dir directories, task deletion, dynamic task lists, /copy command general availability, and config backup rotation plus bug fixes. Added two new hook events (PostToolUseFailure and SubagentStart) from official documentation. Added /copy slash command to the commands list. Added CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD environment variable. Created new comprehensive Desktop App Features section documenting diff view with inline commenting, git worktrees for parallel sessions, .worktreeinclude file for copying gitignored files, and installation links for macOS/Windows. Updated guide changelog to version 2026.1.6 and update-log.md with the changes.",
+      "sections": "[Changelog, Hook Events, Slash Commands, Environment Variables, Desktop App Features (NEW), VSCode Plugin Features, This Guide's Changelog]"
+    },
+    {
       "date": "2026-01-25T02:05:10Z",
       "release": "v2.1.19",
       "description": "Updated the guide with Claude Code v2.1.19 release information including the new CLAUDE_CODE_ENABLE_TASKS environment variable, shorthand argument syntax ($0, $1) for custom commands, bracket syntax change for indexed arguments ($ARGUMENTS[0]), new CLI flags (--json-schema, --permission-prompt-tool, --setting-sources, --allow-dangerously-skip-permissions, --include-partial-messages, --init, --init-only, --maintenance), VSCode session forking and rewind functionality, expanded monitoring/telemetry environment variables, and multiple bug fixes. The guide changelog was updated to version 2026.1.5 documenting all additions.",
