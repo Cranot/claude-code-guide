@@ -1159,6 +1159,7 @@ Recent settings additions (configure in `/config` or `settings.json`):
   // UI preferences
   "showTurnDuration": true,  // Show turn duration messages
   "fileSuggestion": "custom-cmd",  // Custom @ file search command
+  "spinnerVerbs": ["analyzing", "thinking", "processing"],  // Custom spinner verbs [NEW]
 
   // Session behavior
   "companyAnnouncements": true,  // Show startup announcements
@@ -3327,6 +3328,7 @@ When using Claude Code in VSCode:
 - **Remote session browsing** [v2.1.16]: OAuth users can browse and resume remote Claude sessions directly from the Sessions dialog
 - **`/usage` command** [v2.1.14]: Display current plan usage directly in VSCode
 - **Session forking and rewind** [v2.1.19]: Fork sessions and rewind functionality now enabled for all users
+- **Python virtual environment activation** [v2.1.21]: Automatic activation ensures `python` and `pip` use the correct interpreter (configure via `claudeCode.usePythonEnvironment` setting)
 
 **Source:** [Plugins](https://code.claude.com/docs/en/plugins)
 
@@ -4991,7 +4993,35 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.20** (January 27, 2026) - Latest
+**Version 2.1.23** (January 29, 2026) - Latest
+- ⚙️ Added customizable spinner verbs setting (`spinnerVerbs`)
+- 🔧 Fixed mTLS and proxy connectivity for users behind corporate proxies or using client certificates
+- 🔧 Fixed per-user temp directory isolation to prevent permission conflicts on shared systems
+- 🐛 Fixed race condition causing 400 errors when prompt caching scope was enabled
+- 🐛 Fixed pending async hooks not being cancelled when headless streaming sessions ended
+- 🐛 Fixed tab completion not updating the input field when accepting a suggestion
+- 🐛 Fixed ripgrep search timeouts silently returning empty results instead of reporting errors
+- ⚡ Improved terminal rendering performance with optimized screen data layout
+- ⏱️ Changed Bash commands to show timeout duration alongside elapsed time
+- 🟣 Changed merged pull requests to show purple status indicator in prompt footer
+- 🔌 [IDE] Fixed model options displaying incorrect region strings for Bedrock users in headless mode
+
+**Version 2.1.22** (January 28, 2026)
+- 🔧 Fixed structured outputs for non-interactive (-p) mode
+
+**Version 2.1.21** (January 28, 2026)
+- 🌐 Added support for full-width (zenkaku) number input from Japanese IME in option selection prompts
+- 🐛 Fixed shell completion cache files being truncated on exit
+- 🐛 Fixed API errors when resuming sessions that were interrupted during tool execution
+- 🐛 Fixed auto-compact triggering too early on models with large output token limits
+- 🐛 Fixed task IDs potentially being reused after deletion
+- 🐛 Fixed file search not working in VS Code extension on Windows
+- 📊 Improved read/search progress indicators to show "Reading…" while in progress and "Read" when complete
+- 🤖 Improved Claude to prefer file operation tools (Read, Edit, Write) over bash equivalents (cat, sed, awk)
+- 🐍 [VSCode] Added automatic Python virtual environment activation (`claudeCode.usePythonEnvironment` setting)
+- 🔌 [VSCode] Fixed message action buttons having incorrect background colors
+
+**Version 2.1.20** (January 27, 2026)
 - ⌨️ Arrow key history navigation in vim normal mode
 - ⌨️ External editor shortcut (Ctrl+G) added to help menu
 - 📊 PR review status indicator in prompt footer (approved/changes requested/pending/draft)
@@ -5218,8 +5248,18 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 
 ### This Guide's Changelog
 
+**Version 2026.1.7 (January 29, 2026)**
+- Updated to v2.1.23 (latest release)
+- Added v2.1.21 through v2.1.23 changelog entries:
+  - v2.1.23: Customizable spinner verbs setting, mTLS/proxy connectivity fixes, terminal rendering improvements, bash timeout display
+  - v2.1.22: Fixed structured outputs for non-interactive mode
+  - v2.1.21: Japanese IME support, Python virtual environment activation in VSCode, session resume fixes, improved file operation preferences
+- Added `spinnerVerbs` setting documentation for customizing spinner messages
+- Added VSCode Python virtual environment activation feature (`claudeCode.usePythonEnvironment`)
+- Added merged PR purple status indicator behavior
+
 **Version 2026.1.6 (January 27, 2026)**
-- Updated to v2.1.20 (latest release)
+- Updated to v2.1.20
 - Added v2.1.20 changelog entries:
   - Arrow key history navigation in vim normal mode
   - External editor shortcut (Ctrl+G) in help menu

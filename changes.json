@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-01-29T02:05:30Z",
+      "release": "v2.1.23",
+      "description": "Updated the guide with Claude Code v2.1.21 through v2.1.23 releases (January 28-29, 2026). Added three new version entries to the CLI changelog: v2.1.23 introduces customizable spinner verbs setting (spinnerVerbs), mTLS/proxy connectivity fixes for corporate environments, terminal rendering performance improvements, bash command timeout display, merged PR purple status indicator, and multiple bug fixes; v2.1.22 fixes structured outputs for non-interactive (-p) mode; v2.1.21 adds Japanese IME full-width number support, automatic Python virtual environment activation in VSCode (via claudeCode.usePythonEnvironment setting), improved progress indicators, better file operation tool preferences over bash equivalents, and numerous bug fixes. Added spinnerVerbs setting documentation to the UI preferences section. Added Python virtual environment activation feature to VSCode Plugin Features section. Updated the guide's changelog to version 2026.1.7 and update-log.md with the changes.",
+      "sections": "[Changelog, Settings (New Settings), VSCode Plugin Features, This Guide's Changelog]"
+    },
+    {
       "date": "2026-01-27T02:04:52Z",
       "release": "v2.1.20",
       "description": "Updated the guide with Claude Code v2.1.20 release (January 27, 2026). Added v2.1.20 changelog with 14 entries including arrow key vim navigation, external editor shortcut in help menu, PR review status indicator, CLAUDE.md loading from --add-dir directories, task deletion, dynamic task lists, /copy command general availability, and config backup rotation plus bug fixes. Added two new hook events (PostToolUseFailure and SubagentStart) from official documentation. Added /copy slash command to the commands list. Added CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD environment variable. Created new comprehensive Desktop App Features section documenting diff view with inline commenting, git worktrees for parallel sessions, .worktreeinclude file for copying gitignored files, and installation links for macOS/Windows. Updated guide changelog to version 2026.1.6 and update-log.md with the changes.",
