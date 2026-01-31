@@ -104,6 +104,7 @@ claude --verbose                    # Enable verbose logging (full turn-by-turn 
 # Session Management
 claude --continue                   # Continue from last session
 claude --resume <session-id>        # Resume specific session by ID or name
+claude --from-pr <pr>               # Resume session linked to GitHub PR number or URL [NEW]
 claude --fork-session               # Create new session ID instead of reusing original
 claude --session-id <uuid>          # Use specific session ID (must be valid UUID)
 
@@ -250,6 +251,11 @@ Claude Code uses an **incremental permission system** for safety:
 "ask"    # Prompt for each use (default for new operations)
 "allow"  # Permit without asking
 "deny"   # Block completely
+
+# Permission Priority [NEW v2.1.27]
+# Content-level rules override tool-level rules
+# Example: allow: ["Bash"], ask: ["Bash(rm *)"]
+#   -> Bash is generally allowed, but "rm *" commands require confirmation
 
 # Tools Requiring Permission
 - Bash (command execution)
@@ -1134,6 +1140,7 @@ Enter → Submit the suggestion as-is
 **Advanced:**
 | Variable | Description |
 |----------|-------------|
+| `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` | Disable anthropic-beta headers (workaround for gateway users) [NEW] |
 | `DISABLE_INTERLEAVED_THINKING` | Disable interleaved thinking |
 | `USE_BUILTIN_RIPGREP` | Use built-in ripgrep |
 | `CLOUD_ML_REGION` | Cloud ML region for Vertex |
@@ -3329,6 +3336,7 @@ When using Claude Code in VSCode:
 - **`/usage` command** [v2.1.14]: Display current plan usage directly in VSCode
 - **Session forking and rewind** [v2.1.19]: Fork sessions and rewind functionality now enabled for all users
 - **Python virtual environment activation** [v2.1.21]: Automatic activation ensures `python` and `pip` use the correct interpreter (configure via `claudeCode.usePythonEnvironment` setting)
+- **Claude in Chrome integration** [v2.1.27]: Connect Claude Code to Chrome browser for web automation and testing
 
 **Source:** [Plugins](https://code.claude.com/docs/en/plugins)
 
@@ -4993,7 +5001,23 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.23** (January 29, 2026) - Latest
+**Version 2.1.27** (January 30, 2026) - Latest
+- 🔗 Added `--from-pr` flag to resume sessions linked to specific GitHub PR number or URL
+- 🔗 Sessions now automatically link to PRs when created via `gh pr create`
+- 🔒 Permissions now respect content-level `ask` over tool-level `allow` (e.g., `allow: ["Bash"], ask: ["Bash(rm *)"]`)
+- 🔍 Tool call failures and denials now added to debug logs
+- 🐛 Fixed `/context` command colored output display
+- 🐛 Fixed status bar duplicating background task indicator with PR status
+- 🔌 [VSCode] Enabled Claude in Chrome integration
+- 🪟 [Windows] Fixed bash command execution failing for users with `.bashrc` files
+- 🪟 [Windows] Fixed console windows flashing when spawning child processes
+- 🔌 [VSCode] Fixed OAuth token expiration causing 401 errors after extended sessions
+
+**Version 2.1.25** (January 29, 2026)
+- 🔧 Fixed beta header validation error for gateway users on Bedrock and Vertex
+- 💡 Workaround: Set `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1` to avoid the error
+
+**Version 2.1.23** (January 29, 2026)
 - ⚙️ Added customizable spinner verbs setting (`spinnerVerbs`)
 - 🔧 Fixed mTLS and proxy connectivity for users behind corporate proxies or using client certificates
 - 🔧 Fixed per-user temp directory isolation to prevent permission conflicts on shared systems
@@ -5247,6 +5271,16 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.8 (January 31, 2026)**
+- Updated to v2.1.27 (latest release)
+- Added v2.1.25 and v2.1.27 changelog entries:
+  - v2.1.27: `--from-pr` flag for resuming PR-linked sessions, sessions auto-link when created via `gh pr create`, permission priority (content-level `ask` over tool-level `allow`), VSCode Chrome integration, Windows fixes
+  - v2.1.25: Beta header validation fix for gateway users, `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` workaround
+- Added `--from-pr` flag to CLI flags reference
+- Added `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` environment variable documentation
+- Added VSCode Chrome integration feature
+- Added permission priority documentation (content-level rules override tool-level rules)
 
 **Version 2026.1.7 (January 29, 2026)**
 - Updated to v2.1.23 (latest release)

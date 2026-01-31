@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-01-31T02:05:29Z",
+      "release": "v2.1.27",
+      "description": "Updated the guide with Claude Code v2.1.25 and v2.1.27 releases (January 29-30, 2026). Added v2.1.27 as the latest release with new features including: `--from-pr` flag for resuming sessions linked to GitHub PRs, automatic PR linking when sessions are created via `gh pr create`, permission priority system where content-level `ask` rules override tool-level `allow` rules, VSCode Chrome integration enablement, debug log improvements for tool call failures/denials, and Windows fixes (bash execution with .bashrc files, console window flashing). Added v2.1.25 with beta header validation fix for Bedrock/Vertex gateway users and the `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` environment variable workaround. Updated the CLI Flags Reference with the new `--from-pr` flag. Added `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` to the Advanced environment variables table. Added permission priority documentation to the Permission Model section. Added VSCode Chrome integration feature to the VSCode Plugin Features section. Updated the guide's changelog to version 2026.1.8 and added corresponding entry to update-log.md.",
+      "sections": "[Changelog (CLI Releases), CLI Flags Reference, Environment Variables, Permission Model, VSCode Plugin Features, This Guide's Changelog, update-log.md]"
+    },
+    {
       "date": "2026-01-29T02:05:30Z",
       "release": "v2.1.23",
       "description": "Updated the guide with Claude Code v2.1.21 through v2.1.23 releases (January 28-29, 2026). Added three new version entries to the CLI changelog: v2.1.23 introduces customizable spinner verbs setting (spinnerVerbs), mTLS/proxy connectivity fixes for corporate environments, terminal rendering performance improvements, bash command timeout display, merged PR purple status indicator, and multiple bug fixes; v2.1.22 fixes structured outputs for non-interactive (-p) mode; v2.1.21 adds Japanese IME full-width number support, automatic Python virtual environment activation in VSCode (via claudeCode.usePythonEnvironment setting), improved progress indicators, better file operation tool preferences over bash equivalents, and numerous bug fixes. Added spinnerVerbs setting documentation to the UI preferences section. Added Python virtual environment activation feature to VSCode Plugin Features section. Updated the guide's changelog to version 2026.1.7 and update-log.md with the changes.",
