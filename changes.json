@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-02-01T02:03:18Z",
+      "release": "v2.1.29",
+      "description": "Updated the README.md with Claude Code v2.1.29 release (January 31, 2026) which includes a fix for startup performance issues when resuming sessions with `saved_hook_context`. Added v2.1.29 as the latest release in the CLI changelog. Updated the guide's own changelog to version 2026.1.9 (February 1, 2026) documenting this addition. Also updated the update-log.md with the corresponding entry. All code fences are balanced (456 total), internal links in the table of contents correctly reference existing sections, and markdown formatting is consistent.",
+      "sections": "[Changelog (CLI Releases), This Guide's Changelog]"
+    },
+    {
       "date": "2026-01-31T02:05:29Z",
       "release": "v2.1.27",
       "description": "Updated the guide with Claude Code v2.1.25 and v2.1.27 releases (January 29-30, 2026). Added v2.1.27 as the latest release with new features including: `--from-pr` flag for resuming sessions linked to GitHub PRs, automatic PR linking when sessions are created via `gh pr create`, permission priority system where content-level `ask` rules override tool-level `allow` rules, VSCode Chrome integration enablement, debug log improvements for tool call failures/denials, and Windows fixes (bash execution with .bashrc files, console window flashing). Added v2.1.25 with beta header validation fix for Bedrock/Vertex gateway users and the `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` environment variable workaround. Updated the CLI Flags Reference with the new `--from-pr` flag. Added `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` to the Advanced environment variables table. Added permission priority documentation to the Permission Model section. Added VSCode Chrome integration feature to the VSCode Plugin Features section. Updated the guide's changelog to version 2026.1.8 and added corresponding entry to update-log.md.",

@@ -5001,7 +5001,10 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.27** (January 30, 2026) - Latest
+**Version 2.1.29** (January 31, 2026) - Latest
+- ⚡ Fixed startup performance issues when resuming sessions with `saved_hook_context`
+
+**Version 2.1.27** (January 30, 2026)
 - 🔗 Added `--from-pr` flag to resume sessions linked to specific GitHub PR number or URL
 - 🔗 Sessions now automatically link to PRs when created via `gh pr create`
 - 🔒 Permissions now respect content-level `ask` over tool-level `allow` (e.g., `allow: ["Bash"], ask: ["Bash(rm *)"]`)
@@ -5272,8 +5275,13 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 
 ### This Guide's Changelog
 
+**Version 2026.1.9 (February 1, 2026)**
+- Updated to v2.1.29 (latest release)
+- Added v2.1.29 changelog entry:
+  - Startup performance fix for sessions with `saved_hook_context`
+
 **Version 2026.1.8 (January 31, 2026)**
-- Updated to v2.1.27 (latest release)
+- Updated to v2.1.27 (latest release at time of update)
 - Added v2.1.25 and v2.1.27 changelog entries:
   - v2.1.27: `--from-pr` flag for resuming PR-linked sessions, sessions auto-link when created via `gh pr create`, permission priority (content-level `ask` over tool-level `allow`), VSCode Chrome integration, Windows fixes
   - v2.1.25: Beta header validation fix for gateway users, `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` workaround
