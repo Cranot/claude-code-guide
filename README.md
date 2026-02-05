@@ -366,6 +366,7 @@ A **CLAUDE.md** file in your project root provides persistent context across ses
 Read file_path="/src/app.ts"
 Read file_path="/docs/screenshot.png"  # Can read images!
 Read file_path="/docs/guide.pdf"       # Can read PDFs!
+Read file_path="/docs/guide.pdf" pages="1-5"  # Read specific PDF pages [NEW v2.1.30]
 ```
 
 **Capabilities:**
@@ -376,9 +377,14 @@ Read file_path="/docs/guide.pdf"       # Can read PDFs!
 - Returns content with line numbers (`cat -n` format)
 - Can read large files with offset/limit parameters
 
+**PDF Parameters** [NEW v2.1.30]:
+- `pages`: Optional page range (e.g., `"1-5"`, `"1,3,5"`) to read specific pages
+- Large PDFs (>10 pages) return a lightweight reference when @mentioned
+- PDF limits: Maximum 100 pages, 20MB file size
+
 **Special Features:**
 - **Images**: Claude can read screenshots of errors, UI designs, architecture diagrams
-- **PDFs** [NEW]: Extract and analyze PDF content, useful for documentation and requirements
+- **PDFs**: Extract and analyze PDF content, useful for documentation and requirements
 - **Notebooks**: Full access to code cells, markdown, and outputs
 
 #### Write Tool
@@ -1166,12 +1172,13 @@ Recent settings additions (configure in `/config` or `settings.json`):
   // UI preferences
   "showTurnDuration": true,  // Show turn duration messages
   "fileSuggestion": "custom-cmd",  // Custom @ file search command
-  "spinnerVerbs": ["analyzing", "thinking", "processing"],  // Custom spinner verbs [NEW]
+  "spinnerVerbs": ["analyzing", "thinking", "processing"],  // Custom spinner verbs
+  "prefersReducedMotion": false,  // Reduce UI animations for accessibility [NEW v2.1.30]
 
   // Session behavior
   "companyAnnouncements": true,  // Show startup announcements
 
-  // Plan mode [NEW]
+  // Plan mode
   "plansDirectory": ".claude/plans"  // Custom directory for plan files
 }
 ```
@@ -1518,6 +1525,7 @@ Structure your SKILL.md:
 # Discovery & Debugging
 /bug               # Report bugs (sends conversation to Anthropic)
 /commands          # List all slash commands
+/debug             # Troubleshoot session issues [NEW v2.1.30]
 /hooks             # Show configured hooks
 /skills            # List available Skills
 /plugin            # Plugin management interface
@@ -5001,7 +5009,40 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.29** (January 31, 2026) - Latest
+**Version 2.1.31** (February 4, 2026) - Latest
+- 💡 Added session resume hint on exit showing how to continue conversations later
+- 🌐 Added full-width (zenkaku) space input support from Japanese IME in checkbox selection
+- 🤖 Improved system prompts to guide model toward dedicated tools (Read, Edit, Glob, Grep) instead of bash equivalents
+- 🐛 Fixed PDF too large errors permanently locking up sessions
+- 🐛 Fixed bash commands incorrectly reporting "Read-only file system" errors in sandbox mode
+- 🐛 Fixed crashes after entering plan mode with missing default fields in `~/.claude.json`
+- 🐛 Fixed `temperatureOverride` being ignored in streaming API path
+- 🐛 Fixed LSP shutdown/exit compatibility with strict language servers
+- ⚡ Reduced terminal layout jitter during spinner animations
+- 📝 Better PDF and request size error messages (shows actual limits: 100 pages, 20MB)
+- 💰 Removed misleading Anthropic API pricing display for third-party provider users (Bedrock, Vertex, Foundry)
+
+**Version 2.1.30** (February 3, 2026)
+- 📄 Added `pages` parameter for Read tool with PDFs (e.g., `pages: "1-5"`) [NEW]
+- 📄 Large PDFs (>10 pages) now return lightweight reference when @mentioned
+- 🔑 Added pre-configured OAuth credentials for MCP servers without Dynamic Client Registration
+- 🔍 Added `/debug` command for troubleshooting sessions [NEW]
+- 📊 Added token count, tool uses, and duration metrics in Task results
+- ♿ Added reduced motion mode configuration option (`prefersReducedMotion` setting) [NEW]
+- 🐛 Fixed phantom "(no content)" text blocks in API conversation history
+- 🐛 Fixed prompt cache invalidation (now correctly revalidates on tool description/schema changes)
+- 🐛 Fixed 400 errors after `/login` with thinking blocks in conversation
+- 🐛 Fixed hangs when resuming sessions with corrupted transcripts
+- 🐛 Fixed rate limit messages for Max 20x users
+- 🐛 Fixed subagents unable to access SDK-provided MCP tools
+- 🐛 Fixed Windows bash execution failure with `.bashrc` files
+- 🐛 Fixed duplicate sessions in VSCode
+- ⚡ 68% memory reduction for `--resume` with many sessions
+- 📊 `TaskStop` tool now displays stopped command/task description
+- ⚡ `/model` executes immediately instead of queuing
+- ⌨️ [VSCode] Multiline input in question dialogs (Shift+Enter)
+
+**Version 2.1.29** (January 31, 2026)
 - ⚡ Fixed startup performance issues when resuming sessions with `saved_hook_context`
 
 **Version 2.1.27** (January 30, 2026)
@@ -5274,6 +5315,16 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.10 (February 5, 2026)**
+- Updated to v2.1.31 (latest release)
+- Added v2.1.30 and v2.1.31 changelog entries:
+  - v2.1.31: Session resume hint on exit, Japanese IME full-width space support, improved tool preference prompts, PDF error handling fixes, sandbox bash fixes, plan mode crash fix, temperature override fix, LSP compatibility improvements, spinner animation improvements, better error messages
+  - v2.1.30: PDF `pages` parameter for Read tool, `/debug` command, `prefersReducedMotion` setting, pre-configured OAuth for MCP, Task result metrics, 68% memory reduction for session resume, VSCode multiline input, multiple bug fixes
+- Added PDF `pages` parameter documentation to Read tool section
+- Added `/debug` slash command for troubleshooting sessions
+- Added `prefersReducedMotion` accessibility setting documentation
+- Updated PDF limits documentation (100 pages, 20MB)
 
 **Version 2026.1.9 (February 1, 2026)**
 - Updated to v2.1.29 (latest release)
