@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-02-07T02:07:22Z",
+      "release": "v2.1.34",
+      "description": "Updated the Claude Code Guide to v2.1.34 (latest release as of February 6, 2026). Major additions include: (1) Claude Opus 4.6 is now available as announced in v2.1.32; (2) Added comprehensive new \"Agent Teams\" section documenting the research preview multi-agent collaboration feature including team architecture, display modes (in-process/tmux/auto), team controls, hooks (TeammateIdle, TaskCompleted), and limitations; (3) Added \"Auto-Memory\" subsection documenting Claude's automatic memory recording feature with memory scope options for agents; (4) Added v2.1.32-v2.1.34 to the CLI changelog with all features and bug fixes; (5) Added --teammate-mode CLI flag for agent team configuration; (6) Added TeammateIdle and TaskCompleted events to the hook events table; (7) Added CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS and CLAUDE_CODE_DISABLE_AUTO_MEMORY environment variables; (8) Updated the navigation Contents table with Agent Teams link; (9) Updated the guide's own changelog to version 2026.1.11. Code fences are balanced (476 total) and internal links validated.",
+      "sections": "[Changelog (CLI Releases), Agent Teams (NEW section), Auto-Memory (NEW subsection), Hook Events, CLI Flags Reference, Environment Variables, Contents (navigation table), This Guide's Changelog, update-log.md]"
+    },
+    {
       "date": "2026-02-05T02:04:33Z",
       "release": "v2.1.31",
       "description": "Updated the guide with Claude Code v2.1.30 and v2.1.31 releases (February 3-4, 2026). Added v2.1.31 as the new latest version with session resume hints, Japanese IME improvements, PDF error handling fixes, sandbox mode bash fixes, plan mode crash fix, LSP compatibility improvements, and better error messages. Added v2.1.30 with the new PDF `pages` parameter for the Read tool, `/debug` slash command for troubleshooting, and `prefersReducedMotion` accessibility setting. Updated the Read tool documentation with PDF page selection examples and limits (100 pages, 20MB). Added the /debug command to the slash commands list. Added prefersReducedMotion to the settings section. Updated the guide's changelog to version 2026.1.10 and the update-log.md with detailed entry. All code fences verified balanced (456) and internal links validated.",

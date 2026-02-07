@@ -58,6 +58,7 @@ claude --version  # Verify installation
 | [Quick Start Guide](#quick-start-guide) | [Hooks System](#hooks-system) | [Examples Library](#examples-library) | [Troubleshooting](#troubleshooting) |
 | [Quick Reference](#quick-reference) | [MCP Integration](#mcp-integration) | [Best Practices](#best-practices) | [Changelog](#changelog) |
 | | [Sub-Agents](#sub-agents) | | [Auto-Update Pipeline](#auto-update-pipeline) |
+| | [Agent Teams](#agent-teams) | | |
 | | [Plugins](#plugins) | | |
 
 ---
@@ -155,6 +156,11 @@ claude --strict-mcp-config          # Only use MCP servers from --mcp-config
 claude --ide                        # Auto-connect to IDE on startup
 claude --chrome                     # Enable Chrome browser integration
 claude --no-chrome                  # Disable Chrome browser integration
+
+# Agent Teams [NEW]
+claude --teammate-mode in-process   # Teammates display in main terminal
+claude --teammate-mode tmux         # Each teammate in own pane (requires tmux/iTerm2)
+claude --teammate-mode auto         # Auto-detect (default)
 
 # Setup & Maintenance
 claude --init                       # Run Setup hooks and start interactive mode
@@ -994,6 +1000,34 @@ Ctrl+B  # Background current command or agent (unified shortcut)
 
 **Source:** [Background Tasks](https://code.claude.com/docs/en/background-tasks)
 
+### Auto-Memory [NEW]
+
+Claude Code now automatically records and recalls memories as it works (v2.1.32+).
+
+**How It Works:**
+- Claude automatically remembers important context, decisions, and patterns
+- Memories persist across sessions and inform future work
+- No manual intervention required
+
+**Memory Scopes for Agents:**
+```markdown
+---
+name: my-agent
+memory: project  # Options: user, project, local
+---
+```
+
+| Scope | Storage | Shared |
+|-------|---------|--------|
+| `user` | `~/.claude/` | All your projects |
+| `project` | `.claude/` | Team via git |
+| `local` | `.claude/*.local.*` | No (gitignored) |
+
+**Disable Auto-Memory:**
+```bash
+export CLAUDE_CODE_DISABLE_AUTO_MEMORY=1
+```
+
 ### Keyboard Shortcuts [OFFICIAL]
 
 **Navigation & Editing:**
@@ -1146,7 +1180,10 @@ Enter → Submit the suggestion as-is
 **Advanced:**
 | Variable | Description |
 |----------|-------------|
-| `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` | Disable anthropic-beta headers (workaround for gateway users) [NEW] |
+| `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` | Disable anthropic-beta headers (workaround for gateway users) |
+| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | Enable agent teams feature (`1`) [NEW] |
+| `CLAUDE_CODE_DISABLE_AUTO_MEMORY` | Disable automatic memory recording (`1`) [NEW] |
+| `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` | Disable background task system (`1`) |
 | `DISABLE_INTERLEAVED_THINKING` | Disable interleaved thinking |
 | `USE_BUILTIN_RIPGREP` | Use built-in ripgrep |
 | `CLOUD_ML_REGION` | Cloud ML region for Vertex |
@@ -1944,13 +1981,15 @@ Hooks are configured in `.claude/settings.json` or `~/.claude/settings.json`:
 | **UserPromptSubmit** | User submits a prompt | Yes |
 | **PreToolUse** | Before tool execution | Yes |
 | **PostToolUse** | After tool succeeds | No |
-| **PostToolUseFailure** | After tool fails [NEW] | No |
+| **PostToolUseFailure** | After tool fails | No |
 | **PermissionRequest** | When permission dialog appears | Yes |
-| **SubagentStart** | When spawning a subagent [NEW] | No |
+| **SubagentStart** | When spawning a subagent | No |
 | **SubagentStop** | When subagent finishes | Yes |
 | **Stop** | Claude finishes responding | Yes |
 | **Notification** | Claude sends notification | No |
 | **PreCompact** | Before context compaction | No |
+| **TeammateIdle** | Agent team teammate about to go idle [NEW] | Yes |
+| **TaskCompleted** | Task being marked as completed [NEW] | Yes |
 
 ### Example: Protect Sensitive Files [OFFICIAL]
 
@@ -3197,6 +3236,169 @@ allowedTools: [Read, Write, Edit, Bash]  # Can modify code
 ```
 
 **Source:** [Sub-Agents](https://code.claude.com/docs/en/sub-agents)
+
+---
+
+## Agent Teams
+
+**Agent Teams enable multiple Claude Code instances to collaborate on complex tasks with shared context and direct communication.**
+
+### What Are Agent Teams? [OFFICIAL]
+
+Agent Teams (experimental) allow you to coordinate multiple Claude Code sessions working together:
+
+```bash
+# Key differences from Sub-Agents:
+- Sub-Agents: Run within a single session, report only to main agent
+- Agent Teams: Independent sessions that can communicate directly with each other
+
+# When to use Agent Teams:
+✅ Research and review (multiple perspectives simultaneously)
+✅ New modules/features (teammates own separate pieces)
+✅ Debugging with competing hypotheses (parallel investigation)
+✅ Cross-layer coordination (frontend, backend, tests)
+
+# When NOT to use Agent Teams:
+❌ Sequential tasks with dependencies
+❌ Same-file edits (coordination overhead)
+❌ Simple tasks (overkill)
+```
+
+### Enable Agent Teams [OFFICIAL]
+
+Agent Teams are disabled by default. Enable in settings:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Or set the environment variable:
+
+```bash
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+claude
+```
+
+### Starting a Team [OFFICIAL]
+
+```bash
+# Describe the task and team structure
+> "Create an agent team to review PR #142. Spawn three reviewers:
+   - One focused on security implications
+   - One checking performance impact
+   - One validating test coverage
+   Have them each review and report findings."
+
+# Claude creates the team and coordinates work
+# Use Shift+Up/Down to select and message teammates directly
+```
+
+### Team Display Modes [OFFICIAL]
+
+| Mode | Description | Best For |
+|------|-------------|----------|
+| `in-process` | All teammates in main terminal | Any terminal, simple setup |
+| `tmux` | Each teammate in own pane | Parallel visibility, tmux/iTerm2 |
+| `auto` (default) | Uses tmux if already in tmux session | Automatic selection |
+
+Configure in settings:
+
+```json
+{
+  "teammateMode": "in-process"
+}
+```
+
+Or via CLI flag:
+
+```bash
+claude --teammate-mode in-process
+```
+
+### Team Controls [OFFICIAL]
+
+```bash
+# Select teammates
+Shift+Up/Down          # Cycle through teammates
+
+# View teammate session
+Enter                  # View selected teammate's session
+Escape                 # Interrupt teammate's turn
+
+# Manage tasks
+Ctrl+T                 # Toggle shared task list
+
+# Delegate mode
+Shift+Tab              # Toggle delegate mode (lead only coordinates, doesn't implement)
+
+# Shut down
+> "Ask the researcher teammate to shut down"
+> "Clean up the team"
+```
+
+### Team Architecture [OFFICIAL]
+
+| Component | Description |
+|-----------|-------------|
+| **Team Lead** | Main session that creates team, spawns teammates, coordinates work |
+| **Teammates** | Independent Claude Code instances working on assigned tasks |
+| **Task List** | Shared work items that teammates claim and complete |
+| **Mailbox** | Messaging system for inter-agent communication |
+
+**Storage Locations:**
+- Team config: `~/.claude/teams/{team-name}/config.json`
+- Task list: `~/.claude/tasks/{team-name}/`
+
+### Team Hooks [OFFICIAL]
+
+Use hooks to enforce quality gates:
+
+```json
+{
+  "hooks": {
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [ ! -f ./dist/output.js ]; then echo \"Build artifact missing\" >&2; exit 2; fi'"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if ! npm test 2>&1; then echo \"Tests failing\" >&2; exit 2; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+- **TeammateIdle**: Runs when teammate about to go idle. Exit code 2 sends feedback and keeps teammate working.
+- **TaskCompleted**: Runs when task marked complete. Exit code 2 prevents completion with feedback.
+
+### Current Limitations [OFFICIAL]
+
+- No session resumption with in-process teammates
+- Task status can lag (stuck tasks need manual intervention)
+- Slow shutdown (teammates finish current work first)
+- One team per session
+- No nested teams (teammates can't spawn teams)
+- Fixed lead (can't promote teammates)
+- Permissions set at spawn (can't pre-set per-teammate)
+- Split panes require tmux or iTerm2
+
+**Source:** [Agent Teams](https://code.claude.com/docs/en/agent-teams)
 
 ---
 
@@ -5009,7 +5211,40 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.31** (February 4, 2026) - Latest
+**Version 2.1.34** (February 6, 2026) - Latest
+- 🐛 Fixed crash when agent teams setting changed between renders
+- 🐛 Fixed commands excluded from sandboxing bypassing Bash ask permission when `autoAllowBashIfSandboxed` was enabled
+
+**Version 2.1.33** (February 6, 2026)
+- 🤖 Agent teammate sessions in tmux now correctly send and receive messages
+- 🪝 Added `TeammateIdle` and `TaskCompleted` hook events for multi-agent workflows [NEW]
+- 🔧 Added support for restricting sub-agents via `Task(agent_type)` syntax
+- 📝 Added `memory` frontmatter field for agents (`user`, `project`, or `local` scope)
+- 🔌 Plugin names now shown in skill descriptions for better discoverability
+- 🐛 Fixed extended thinking interruption when submitting new messages
+- 🐛 Fixed API proxy 404 errors on streaming endpoints
+- 🐛 Fixed proxy settings via `settings.json` environment variables not applying to WebFetch
+- 📊 Improved `/resume` session picker with clean titles (removed raw XML markup)
+- 📝 Enhanced error messages for API connection failures (shows specific causes like ECONNREFUSED, SSL errors)
+- 🔌 [VSCode] Added remote session support with OAuth
+- 🔌 [VSCode] Added git branch and message count to session picker with branch name search
+- 🔌 [VSCode] Fixed scroll-to-bottom under-scrolling on session load/switch
+
+**Version 2.1.32** (February 5, 2026)
+- ✨ **Claude Opus 4.6 is now available!** [NEW]
+- 🤖 Added research preview **Agent Teams** feature for multi-agent collaboration [NEW]
+- 🧠 Claude now automatically records and recalls **memories** as it works [NEW]
+- 📊 Added "Summarize from here" to message selector for partial conversation summarization
+- 📁 Skills in `.claude/skills/` within additional directories (`--add-dir`) now load automatically
+- 🐛 Fixed `@` file completion showing incorrect relative paths from subdirectories
+- 🔄 `--resume` now re-uses `--agent` value from previous conversation
+- 🐛 Fixed bash "Bad substitution" errors with heredocs containing JavaScript template literals
+- 📊 Skill character budget now scales with context window (2% of context)
+- 🐛 Fixed Thai/Lao spacing vowels rendering issues
+- 🔌 [VSCode] Fixed slash commands incorrectly executing with preceding text
+- 🔌 [VSCode] Added spinner when loading past conversations
+
+**Version 2.1.31** (February 4, 2026)
 - 💡 Added session resume hint on exit showing how to continue conversations later
 - 🌐 Added full-width (zenkaku) space input support from Japanese IME in checkbox selection
 - 🤖 Improved system prompts to guide model toward dedicated tools (Read, Edit, Glob, Grep) instead of bash equivalents
@@ -5315,6 +5550,23 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.11 (February 7, 2026)**
+- Updated to v2.1.34 (latest release)
+- Added v2.1.32 through v2.1.34 changelog entries:
+  - v2.1.34: Fixed agent teams settings crash, fixed sandbox permission bypass for excluded commands
+  - v2.1.33: TeammateIdle and TaskCompleted hook events, Task(agent_type) restriction syntax, memory frontmatter for agents, improved session picker, VSCode remote session OAuth, multiple bug fixes
+  - v2.1.32: **Claude Opus 4.6 available**, **Agent Teams** feature (research preview), **Auto-Memory** feature, "Summarize from here" message selector, skills in --add-dir directories, multiple bug fixes
+- Added new **Agent Teams** section with comprehensive documentation:
+  - Team architecture (lead, teammates, task list, mailbox)
+  - Display modes (in-process, tmux, auto)
+  - Team hooks (TeammateIdle, TaskCompleted)
+  - Keyboard controls and limitations
+- Added **Auto-Memory** feature documentation
+- Added `--teammate-mode` CLI flag for agent team display configuration
+- Added `TeammateIdle` and `TaskCompleted` hook events to hooks table
+- Added `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY` environment variables
+- Updated Contents table with Agent Teams link
 
 **Version 2026.1.10 (February 5, 2026)**
 - Updated to v2.1.31 (latest release)
