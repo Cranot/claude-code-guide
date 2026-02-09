@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-02-09T02:03:15Z",
+      "release": "v2.1.37",
+      "description": "Updated the guide with Claude Code v2.1.36 and v2.1.37 releases from February 7, 2026. Added v2.1.37 as the new latest version with a fix for /fast not being immediately available after enabling /extra-usage. Added v2.1.36 which introduces Fast mode for Opus 4.6. Added two new slash commands (/extra-usage and /fast) to the Usage & Stats section for Max plan subscribers. Updated the guide's changelog to version 2026.1.12 and added corresponding entry to update-log.md. All code fences verified balanced (476 total) and internal links validated.",
+      "sections": "[Changelog (CLI Releases), Slash Commands (Usage & Stats), This Guide's Changelog, update-log.md]"
+    },
+    {
       "date": "2026-02-07T02:07:22Z",
       "release": "v2.1.34",
       "description": "Updated the Claude Code Guide to v2.1.34 (latest release as of February 6, 2026). Major additions include: (1) Claude Opus 4.6 is now available as announced in v2.1.32; (2) Added comprehensive new \"Agent Teams\" section documenting the research preview multi-agent collaboration feature including team architecture, display modes (in-process/tmux/auto), team controls, hooks (TeammateIdle, TaskCompleted), and limitations; (3) Added \"Auto-Memory\" subsection documenting Claude's automatic memory recording feature with memory scope options for agents; (4) Added v2.1.32-v2.1.34 to the CLI changelog with all features and bug fixes; (5) Added --teammate-mode CLI flag for agent team configuration; (6) Added TeammateIdle and TaskCompleted events to the hook events table; (7) Added CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS and CLAUDE_CODE_DISABLE_AUTO_MEMORY environment variables; (8) Updated the navigation Contents table with Agent Teams link; (9) Updated the guide's own changelog to version 2026.1.11. Code fences are balanced (476 total) and internal links validated.",

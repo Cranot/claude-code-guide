@@ -1553,6 +1553,8 @@ Structure your SKILL.md:
 # Usage & Stats
 /usage             # View plan limits and usage (NEW)
 /stats             # Usage stats, engagement metrics (supports 7/30/all-time) (NEW)
+/extra-usage       # Enable extra usage for Max plan subscribers [NEW]
+/fast              # Toggle fast mode (uses faster model, available after /extra-usage) [NEW]
 
 # Background Process Management
 /bashes            # List all background processes
@@ -5211,7 +5213,13 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.34** (February 6, 2026) - Latest
+**Version 2.1.37** (February 7, 2026) - Latest
+- 🐛 Fixed `/fast` not being immediately available after enabling `/extra-usage`
+
+**Version 2.1.36** (February 7, 2026)
+- ⚡ **Fast mode is now available for Opus 4.6** [NEW]
+
+**Version 2.1.34** (February 6, 2026)
 - 🐛 Fixed crash when agent teams setting changed between renders
 - 🐛 Fixed commands excluded from sandboxing bypassing Bash ask permission when `autoAllowBashIfSandboxed` was enabled
 
@@ -5551,8 +5559,15 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 
 ### This Guide's Changelog
 
+**Version 2026.1.12 (February 9, 2026)**
+- Updated to v2.1.37 (latest release)
+- Added v2.1.36 and v2.1.37 changelog entries:
+  - v2.1.37: Fixed `/fast` not being immediately available after enabling `/extra-usage`
+  - v2.1.36: **Fast mode now available for Opus 4.6**
+- Added `/extra-usage` and `/fast` slash commands to Usage & Stats section
+
 **Version 2026.1.11 (February 7, 2026)**
-- Updated to v2.1.34 (latest release)
+- Updated to v2.1.34
 - Added v2.1.32 through v2.1.34 changelog entries:
   - v2.1.34: Fixed agent teams settings crash, fixed sandbox permission bypass for excluded commands
   - v2.1.33: TeammateIdle and TaskCompleted hook events, Task(agent_type) restriction syntax, memory frontmatter for agents, improved session picker, VSCode remote session OAuth, multiple bug fixes
