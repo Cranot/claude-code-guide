@@ -930,6 +930,59 @@ Press Tab to toggle thinking mode on/off for subsequent prompts
 
 **Source:** [Thinking Mode](https://code.claude.com/docs/en/thinking-mode)
 
+### Fast Mode [NEW] [OFFICIAL]
+
+Fast mode is a high-speed configuration for Claude Opus 4.6, making responses **2.5x faster** at a higher cost per token. Available since v2.1.36.
+
+**Toggle Fast Mode:**
+```bash
+# Toggle with slash command
+/fast          # Toggle on/off
+
+# Or set in settings
+"fastMode": true   # In user settings file
+```
+
+**Visual Indicators:**
+- `↯` icon appears next to prompt when fast mode is active
+- Icon turns gray during rate limit cooldown
+
+**Pricing (per MTok):**
+| Mode | Input (<200K) | Output | Input (>200K) | Output |
+|------|--------------|--------|---------------|--------|
+| Standard Opus 4.6 | $15 | $75 | $15 | $75 |
+| Fast Mode | $30 | $150 | $60 | $225 |
+
+**Note:** Fast mode is available at 50% discount until February 16, 2026.
+
+**Requirements:**
+- Claude subscription plan (Pro/Max/Team/Enterprise) or Claude Console API
+- Extra usage enabled (`/extra-usage`)
+- Not available on third-party providers (Bedrock, Vertex, Azure Foundry)
+- For Teams/Enterprise: Admin must enable in organization settings
+
+**When to Use:**
+- ✅ Rapid iteration on code changes
+- ✅ Live debugging sessions
+- ✅ Time-sensitive work
+- ❌ Long autonomous tasks (cost matters more)
+- ❌ Batch processing or CI/CD pipelines
+
+**Fast Mode vs Effort Level:**
+| Setting | Effect |
+|---------|--------|
+| **Fast mode** | Same quality, lower latency, higher cost |
+| **Lower effort level** | Faster responses, potentially lower quality |
+
+You can combine both for maximum speed on straightforward tasks.
+
+**Rate Limits:**
+- Separate rate limits from standard Opus 4.6
+- Automatically falls back to standard mode during cooldown
+- Re-enables when cooldown expires
+
+**Source:** [Fast Mode](https://code.claude.com/docs/en/fast-mode)
+
 ### Plan Mode [OFFICIAL]
 
 Plan Mode provides structured planning with model selection for complex tasks.
@@ -5213,7 +5266,23 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 
 For complete details, see the [official CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md).
 
-**Version 2.1.37** (February 7, 2026) - Latest
+**Version 2.1.39** (February 10, 2026) - Latest
+- ⚡ Improved terminal rendering performance
+- 🐛 Fixed fatal errors being swallowed instead of displayed
+- 🐛 Fixed process hanging after session close
+- 🐛 Fixed character loss at terminal screen boundary
+- 🐛 Fixed blank lines in verbose transcript view
+
+**Version 2.1.38** (February 10, 2026)
+- 🐛 Fixed VS Code terminal scroll-to-top regression (introduced in 2.1.37)
+- 🐛 Fixed Tab key queueing slash commands instead of autocompleting
+- 🐛 Fixed bash permission matching for commands using environment variable wrappers
+- 🐛 Fixed text between tool uses disappearing when not using streaming
+- 🐛 Fixed duplicate sessions when resuming in VS Code extension
+- 🔒 Improved heredoc delimiter parsing to prevent command smuggling
+- 🔒 Blocked writes to `.claude/skills` directory in sandbox mode
+
+**Version 2.1.37** (February 7, 2026)
 - 🐛 Fixed `/fast` not being immediately available after enabling `/extra-usage`
 
 **Version 2.1.36** (February 7, 2026)
@@ -5558,6 +5627,18 @@ For complete details, see the [official CHANGELOG.md](https://github.com/anthrop
 ---
 
 ### This Guide's Changelog
+
+**Version 2026.1.13 (February 11, 2026)**
+- Updated to v2.1.39 (latest release)
+- Added v2.1.38 and v2.1.39 changelog entries:
+  - v2.1.39: Terminal rendering performance improvements, fatal error display fix, process hanging fix, screen boundary character fix, verbose transcript blank lines fix
+  - v2.1.38: VSCode scroll-to-top regression fix, Tab key autocomplete fix, bash permission matching fix, streaming text fix, duplicate sessions fix, heredoc security improvements, sandbox skills directory protection
+- Added **Fast Mode** section to Advanced Features with full documentation:
+  - Toggle methods (`/fast` command, settings)
+  - Pricing table (standard vs fast mode)
+  - Requirements (subscription, extra usage, admin enablement)
+  - Use case guidance (when to use vs avoid)
+  - Rate limit behavior and fallback
 
 **Version 2026.1.12 (February 9, 2026)**
 - Updated to v2.1.37 (latest release)

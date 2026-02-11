@@ -1,6 +1,12 @@
 {
   "updates": [
     {
+      "date": "2026-02-11T02:03:51Z",
+      "release": "v2.1.39",
+      "description": "Updated the guide with Claude Code v2.1.38 and v2.1.39 releases (February 10, 2026). Added v2.1.39 as latest release with terminal rendering performance improvements, fatal error display fix, process hanging fix, screen boundary character loss fix, and verbose transcript blank lines fix. Added v2.1.38 with VSCode scroll-to-top regression fix, Tab key autocomplete fix, bash permission matching fix, streaming text fix, duplicate sessions fix, and two security improvements (heredoc delimiter parsing and sandbox skills directory protection). Added comprehensive new Fast Mode section to Advanced Features documenting the 2.5x faster Opus 4.6 mode, including toggle methods, pricing comparison table, subscription/extra-usage requirements, use case guidance, and rate limit behavior. Updated the guide's changelog to version 2026.1.13. All code fences verified balanced (478 total) and internal links validated.",
+      "sections": "[Changelog (CLI Releases), Advanced Features (Fast Mode NEW), This Guide's Changelog, update-log.md]"
+    },
+    {
       "date": "2026-02-09T02:03:15Z",
       "release": "v2.1.37",
       "description": "Updated the guide with Claude Code v2.1.36 and v2.1.37 releases from February 7, 2026. Added v2.1.37 as the new latest version with a fix for /fast not being immediately available after enabling /extra-usage. Added v2.1.36 which introduces Fast mode for Opus 4.6. Added two new slash commands (/extra-usage and /fast) to the Usage & Stats section for Max plan subscribers. Updated the guide's changelog to version 2026.1.12 and added corresponding entry to update-log.md. All code fences verified balanced (476 total) and internal links validated.",
