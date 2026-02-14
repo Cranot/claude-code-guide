@@ -54,7 +54,7 @@ claude --version  # Verify installation
 | Getting Started | Core Features | Practical Usage | Reference |
 |-----------------|---------------|-----------------|-----------|
 | [What is Claude Code?](#what-is-claude-code) | [Skills System](#skills-system) | [Development Workflows](#development-workflows) | [Security](#security-considerations) |
-| [Core Concepts](#core-concepts) | [Slash Commands](#slash-commands) | [Tool Synergies](#tool-synergies) | [SDK Integration](#sdk-integration) |
+| [Core Concepts](#core-concepts) | [Built-in Commands](#built-in-commands) | [Tool Synergies](#tool-synergies) | [SDK Integration](#sdk-integration) |
 | [Quick Start Guide](#quick-start-guide) | [Hooks System](#hooks-system) | [Examples Library](#examples-library) | [Troubleshooting](#troubleshooting) |
 | [Quick Reference](#quick-reference) | [MCP Integration](#mcp-integration) | [Best Practices](#best-practices) | [Changelog](#changelog) |
 | | [Sub-Agents](#sub-agents) | | [Auto-Update Pipeline](#auto-update-pipeline) |
@@ -85,7 +85,7 @@ claude --resume <id>      # Resume specific session
 /kill <id>               # Stop background process
 
 # Discovery
-/commands                 # List slash commands
+/commands                 # List skills and commands
 /hooks                   # Show configured hooks
 /skills                  # List available Skills (NEW)
 /plugin                  # Manage plugins
@@ -267,7 +267,7 @@ Claude Code uses an **incremental permission system** for safety:
 - Bash (command execution)
 - Write/Edit/NotebookEdit (file modifications)
 - WebFetch/WebSearch (network access)
-- SlashCommand (custom commands)
+- Skill (skills and custom commands)
 
 # Tools Not Requiring Permission (Safe Operations)
 - Read/NotebookRead (reading files)
@@ -936,7 +936,7 @@ Fast mode is a high-speed configuration for Claude Opus 4.6, making responses **
 
 **Toggle Fast Mode:**
 ```bash
-# Toggle with slash command
+# Toggle with built-in command
 /fast          # Toggle on/off
 
 # Or set in settings
@@ -1304,57 +1304,297 @@ Session ID: ${CLAUDE_SESSION_ID}
 
 ## Skills System
 
-**Skills are modular capabilities that Claude Code autonomously activates based on your request.**
+**Skills are unified capabilities that extend Claude Code — both auto-activated by Claude and manually invoked via `/skill-name`.**
 
-### What Are Skills?
+> **Note:** Custom slash commands (`.claude/commands/` files) have been merged into skills as of v2.1.3. Your existing command files keep working unchanged. Skills are recommended for new work because they support additional features like supporting files, invocation control, and subagent execution. See [Migration: Commands to Skills](#migration-commands-to-skills).
 
-Skills are **model-invoked** - Claude decides when to use them automatically:
+Claude Code skills follow the [Agent Skills](https://agentskills.io) open standard, which works across multiple AI tools. Claude Code extends the standard with additional features like invocation control, subagent execution, and dynamic context injection.
+
+### What Are Skills? [OFFICIAL]
+
+Skills are instructions packaged as `SKILL.md` files that extend what Claude Code can do. Claude loads them when relevant to your request, or you invoke them directly:
 
 ```
-You: "Generate a PDF report of the test results"
-Claude: [Sees pdf-generator Skill, activates it automatically]
-
+# Claude auto-activates a skill based on your request
 You: "Review this code for security issues"
-Claude: [Activates security-reviewer Skill]
+Claude: [Loads security-reviewer skill automatically]
+
+# Or you invoke a skill directly
+You: /security-reviewer src/auth.ts
+Claude: [Loads and executes the security-reviewer skill]
 ```
 
-**Key Difference:**
-- **Skills**: Claude activates them (autonomous) - "What should I use?"
-- **Slash Commands**: You invoke them (manual) - "/command-name"
+**Two types of skill content:**
 
-### Skill Types [OFFICIAL]
+- **Reference content** — Knowledge Claude applies to your current work (conventions, patterns, style guides). Runs inline alongside your conversation context.
+- **Task content** — Step-by-step instructions for a specific action (deploy, commit, code generation). Often invoked manually with `/skill-name`.
 
-```bash
-# 1. Personal Skills
-~/.claude/skills/my-skill/
-# Available across all your projects
-# Private to you
+### Where Skills Live [OFFICIAL]
 
-# 2. Project Skills
-.claude/skills/team-skill/
-# Shared with team via git
-# Available to all team members
+Where you store a skill determines who can use it:
 
-# 3. Plugin Skills
-# Bundled with installed plugins
-# Installed via plugin system
+| Location | Path | Applies To |
+|----------|------|------------|
+| **Enterprise** | [Managed settings](https://code.claude.com/docs/en/permissions#managed-settings) | All users in organization |
+| **Personal** | `~/.claude/skills/<skill-name>/SKILL.md` | All your projects |
+| **Project** | `.claude/skills/<skill-name>/SKILL.md` | This project only |
+| **Plugin** | `<plugin>/skills/<skill-name>/SKILL.md` | Where plugin is enabled |
+
+When skills share the same name, higher-priority locations win: **Enterprise > Personal > Project**. Plugin skills use a `plugin-name:skill-name` namespace, so they cannot conflict.
+
+**Legacy compatibility:** Files in `.claude/commands/` still work and support the same frontmatter. If a skill and a command share the same name, the skill takes precedence.
+
+**Automatic nested directory discovery:** When you work with files in subdirectories, Claude Code discovers skills from nested `.claude/skills/` directories. For example, editing a file in `packages/frontend/` also loads skills from `packages/frontend/.claude/skills/`. This supports monorepo setups where packages have their own skills.
+
+**Live change detection:** Skills from directories added via `--add-dir` are loaded automatically and picked up by live change detection — edit them during a session without restarting.
+
+### Skill Directory Structure [OFFICIAL]
+
+Each skill is a directory with `SKILL.md` as the entrypoint:
+
 ```
+my-skill/
+├── SKILL.md           # Main instructions (required)
+├── template.md        # Template for Claude to fill in (optional)
+├── examples/
+│   └── sample.md      # Example output (optional)
+└── scripts/
+    └── validate.sh    # Script Claude can execute (optional)
+```
+
+Reference supporting files from your `SKILL.md` so Claude knows what each file contains:
+
+```markdown
+## Additional resources
+- For complete API details, see [reference.md](reference.md)
+- For usage examples, see [examples.md](examples.md)
+```
+
+> **Tip:** Keep `SKILL.md` under 500 lines. Move detailed reference material to separate files.
 
 ### Creating a Skill [OFFICIAL]
 
-**Directory Structure:**
+**Step 1:** Create the skill directory:
+```bash
+# Personal skill (available in all projects)
+mkdir -p ~/.claude/skills/explain-code
+
+# Project skill (shared with team via git)
+mkdir -p .claude/skills/explain-code
 ```
-my-skill/
-├── SKILL.md          # Required: Instructions for Claude
-├── reference.md      # Optional: Additional docs
-├── scripts/          # Optional: Helper scripts
-└── templates/        # Optional: File templates
+
+**Step 2:** Write `SKILL.md` with frontmatter and instructions:
+```yaml
+---
+name: explain-code
+description: Explains code with visual diagrams and analogies. Use when explaining how code works, teaching about a codebase, or when the user asks "how does this work?"
+---
+
+When explaining code, always include:
+
+1. **Start with an analogy**: Compare the code to something from everyday life
+2. **Draw a diagram**: Use ASCII art to show the flow, structure, or relationships
+3. **Walk through the code**: Explain step-by-step what happens
+4. **Highlight a gotcha**: What's a common mistake or misconception?
+
+Keep explanations conversational. For complex concepts, use multiple analogies.
 ```
+
+**Step 3:** Test the skill:
+```bash
+# Let Claude invoke it automatically
+> "How does this code work?"
+
+# Or invoke it directly
+> /explain-code src/auth/login.ts
+```
+
+### Frontmatter Reference [OFFICIAL]
+
+Configure skill behavior with YAML frontmatter between `---` markers at the top of `SKILL.md`. All fields are optional; only `description` is recommended.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | No | Display name. If omitted, uses directory name. Lowercase letters, numbers, hyphens (max 64 chars). |
+| `description` | Recommended | What the skill does and when to use it. Claude uses this to decide when to load it. |
+| `argument-hint` | No | Hint shown during autocomplete (e.g., `[issue-number]` or `[filename] [format]`). |
+| `disable-model-invocation` | No | `true` → only user can invoke via `/name`. Default: `false`. |
+| `user-invocable` | No | `false` → hidden from `/` menu, only Claude can invoke. Default: `true`. |
+| `allowed-tools` | No | Tools Claude can use without asking permission when skill is active. |
+| `model` | No | Model to use when skill is active. |
+| `context` | No | Set to `fork` to run in a forked subagent context. |
+| `agent` | No | Which subagent type to use when `context: fork` is set. |
+| `hooks` | No | Hooks scoped to this skill's lifecycle. See [Hooks](https://code.claude.com/docs/en/hooks#hooks-in-skills-and-agents). |
+
+### Controlling Invocation [OFFICIAL]
+
+By default, both you and Claude can invoke any skill. Two frontmatter fields restrict this:
+
+- **`disable-model-invocation: true`** — Only you can invoke. Use for workflows with side effects (e.g., `/deploy`, `/commit`).
+- **`user-invocable: false`** — Only Claude can invoke. Use for background knowledge that isn't actionable as a command.
+
+```yaml
+# User-only skill (Claude won't auto-trigger)
+---
+name: deploy
+description: Deploy the application to production
+disable-model-invocation: true
+---
+
+# Model-only skill (hidden from / menu)
+---
+name: legacy-system-context
+description: Background knowledge about the legacy system
+user-invocable: false
+---
+```
+
+**Invocation and context-loading behavior:**
+
+| Frontmatter | You Can Invoke | Claude Can Invoke | When Loaded into Context |
+|-------------|----------------|-------------------|--------------------------|
+| (default) | Yes | Yes | Description always in context; full skill loads when invoked |
+| `disable-model-invocation: true` | Yes | No | Description not in context; full skill loads when you invoke |
+| `user-invocable: false` | No | Yes | Description always in context; full skill loads when invoked |
+
+**Restricting Claude's access via `/permissions`:**
+
+```bash
+# Allow only specific skills
+Skill(commit)
+Skill(review-pr *)
+
+# Deny specific skills
+Skill(deploy *)
+
+# Disable all skills
+Skill    # Add to deny rules
+```
+
+Permission syntax: `Skill(name)` for exact match, `Skill(name *)` for prefix match with any arguments.
+
+### Passing Arguments [OFFICIAL]
+
+Skills accept arguments via placeholder substitutions:
+
+| Variable | Description |
+|----------|-------------|
+| `$ARGUMENTS` | All arguments passed when invoking the skill |
+| `$ARGUMENTS[N]` | Specific argument by 0-based index (e.g., `$ARGUMENTS[0]`) |
+| `$N` | Shorthand for `$ARGUMENTS[N]` (e.g., `$0`, `$1`) |
+| `${CLAUDE_SESSION_ID}` | Current session ID (useful for logging) |
+
+**Example:**
+```yaml
+---
+name: fix-issue
+description: Fix a GitHub issue
+disable-model-invocation: true
+---
+
+Fix GitHub issue $ARGUMENTS following our coding standards.
+
+1. Read the issue description
+2. Implement the fix
+3. Write tests
+4. Create a commit
+```
+
+```bash
+/fix-issue 123
+# Claude receives: "Fix GitHub issue 123 following our coding standards..."
+```
+
+**Indexed arguments:**
+```yaml
+---
+name: compare-files
+description: Compare two files
+---
+
+# Compare: $ARGUMENTS[0] vs $ARGUMENTS[1]
+# Shorthand: $0 vs $1
+
+Compare $0 and $1 for differences.
+```
+
+```bash
+/compare-files "src/v1/api.ts" "src/v2/api.ts"
+# $0 = "src/v1/api.ts", $1 = "src/v2/api.ts"
+```
+
+If `$ARGUMENTS` is not present in the skill content, arguments are appended as `ARGUMENTS: <value>`.
+
+### Advanced Patterns [OFFICIAL]
+
+#### Dynamic Context Injection
+
+The `` !`command` `` syntax runs shell commands before the skill content is sent to Claude. The output replaces the placeholder:
+
+```yaml
+---
+name: pr-summary
+description: Summarize changes in a pull request
+context: fork
+agent: Explore
+allowed-tools: Bash(gh *)
+---
+
+## Pull request context
+- PR diff: !`gh pr diff`
+- PR comments: !`gh pr view --comments`
+- Changed files: !`gh pr diff --name-only`
+
+## Your task
+Summarize this pull request...
+```
+
+Each `` !`command` `` executes immediately (before Claude sees anything). Claude only sees the final result with actual data.
+
+#### Running in a Subagent
+
+Add `context: fork` to run a skill in isolation. The skill content becomes the prompt that drives the subagent (no access to conversation history):
+
+```yaml
+---
+name: deep-research
+description: Research a topic thoroughly
+context: fork
+agent: Explore
+---
+
+Research $ARGUMENTS thoroughly:
+
+1. Find relevant files using Glob and Grep
+2. Read and analyze the code
+3. Summarize findings with specific file references
+```
+
+The `agent` field specifies which subagent to use. Options: built-in agents (`Explore`, `Plan`, `general-purpose`) or custom subagents from `.claude/agents/`. Default: `general-purpose`.
+
+> **Warning:** `context: fork` only makes sense for skills with explicit instructions. Guidelines without a task will return without meaningful output.
+
+#### Extended Thinking
+
+To enable extended thinking in a skill, include the word `ultrathink` anywhere in your skill content:
+
+```yaml
+---
+name: architecture-review
+description: Deep architectural analysis
+---
+
+Use ultrathink to analyze the architecture deeply.
+
+Review the overall structure, identify patterns, and suggest improvements.
+```
+
+### Practical Examples
 
 **Example: Code Review Skill**
 
 `.claude/skills/code-reviewer/SKILL.md`:
-```markdown
+```yaml
 ---
 name: code-reviewer
 description: Reviews code for security vulnerabilities, bugs, performance issues, and style problems. Use when user asks to review, audit, or check code quality.
@@ -1364,12 +1604,10 @@ allowed-tools: [Read, Grep, Glob]
 # Code Review Skill
 
 ## When to Activate
-Use this Skill when the user asks to:
+Use this skill when the user asks to:
 - Review code for issues
 - Audit security or find vulnerabilities
 - Check code quality or best practices
-- Analyze code for bugs or problems
-- Perform code inspection or assessment
 
 ## Review Process
 
@@ -1383,117 +1621,236 @@ Use this Skill when the user asks to:
 - **Bugs**: Logic errors, null checks, error handling
 - **Performance**: N+1 queries, unnecessary loops, memory leaks
 - **Style**: Naming conventions, code organization, readability
-- **Best Practices**: Framework patterns, SOLID principles
 
 ### 3. Reporting
 Provide structured feedback organized by severity:
-- **Security Issues** (Critical/High): SQL injection, exposed keys, auth issues
-- **Performance Issues** (Medium): N+1 queries, memory leaks
-- **Style & Best Practices** (Low): Naming conventions, code organization
+- **Critical/High**: Security issues
+- **Medium**: Performance issues
+- **Low**: Style and best practices
 
-Each issue should include: File path, Issue description, and Fix suggestion.
-
-### 4. Verification
-- Suggest fixes with code examples
-- Prioritize by severity
-- Reference specific file:line locations
-
-## Notes
-- Focus on actionable feedback
-- Provide code examples for fixes
-- Consider project context from CLAUDE.md
-- Explain WHY something is an issue
+Each issue: file path, description, and fix suggestion.
 ```
 
 **Example: Test Generator Skill**
 
 `.claude/skills/test-generator/SKILL.md`:
-```markdown
+```yaml
 ---
 name: test-generator
-description: Generates comprehensive unit and integration tests for code. Use when user asks to write tests, add test coverage, or create test cases.
+description: Generates comprehensive unit and integration tests. Use when user asks to write tests, add test coverage, or create test cases.
 allowed-tools: [Read, Write, Grep, Glob, Bash]
 ---
 
 # Test Generator Skill
 
 ## When to Activate
-Use this Skill when user requests:
+Use this skill when user requests:
 - "Write tests for..."
 - "Add test coverage"
 - "Generate test cases"
-- "Create unit/integration tests"
 
 ## Test Generation Process
 
 ### 1. Analyze Target Code
 - Read the file/function to test
 - Identify inputs, outputs, side effects
-- Find dependencies and mocks needed
-- Check existing test patterns (Grep for test files)
+- Check existing test patterns
 
-### 2. Determine Test Type
-- **Unit Tests**: Individual functions, pure logic
-- **Integration Tests**: API endpoints, database operations
-- **Component Tests**: React/Vue components (if frontend)
-
-### 3. Generate Comprehensive Tests
+### 2. Generate Comprehensive Tests
 Cover all scenarios:
-- ✅ Happy path (expected usage)
-- ❌ Error cases (invalid inputs, failures)
-- 🔀 Edge cases (empty, null, boundary values)
-- 🔁 Side effects (database changes, API calls)
+- Happy path (expected usage)
+- Error cases (invalid inputs)
+- Edge cases (empty, null, boundary values)
+- Side effects (database, API calls)
 
-### 4. Follow Project Patterns
+### 3. Follow Project Patterns
 - Check CLAUDE.md for testing conventions
 - Match existing test file structure
-- Use project's test framework (Jest, Mocha, etc.)
-- Follow naming conventions
-
-## Test Template
-
-```typescript
-describe('FunctionName', () => {
-  // Setup
-  beforeEach(() => {
-    // Initialize mocks, test data
-  });
-
-  // Happy path
-  it('should return expected result with valid input', () => {
-    // Arrange
-    // Act
-    // Assert
-  });
-
-  // Error cases
-  it('should throw error when input is invalid', () => {
-    // Test error handling
-  });
-
-  // Edge cases
-  it('should handle empty input gracefully', () => {
-    // Test boundaries
-  });
-
-  // Side effects
-  it('should call external service with correct params', () => {
-    // Test mocks and spies
-  });
-});
+- Use project's test framework
 ```
 
-### 5. Verify Tests
-- Run tests with Bash tool
-- Ensure all pass
-- Check coverage if available
+**Example: Security Review Skill**
+
+`.claude/skills/security-review/SKILL.md`:
+```yaml
+---
+name: security-review
+description: Comprehensive security audit of codebase. Use when asked to review security, audit vulnerabilities, or check for exploits.
+allowed-tools: [Read, Grep, Glob]
+disable-model-invocation: true
+---
+
+# Security Review: $ARGUMENTS
+
+Perform a thorough security audit focusing on: $ARGUMENTS
+
+## Review Checklist
+
+### 1. Authentication & Authorization
+- Check for weak password policies
+- Verify JWT token validation
+- Review session management
+- Check for broken access control
+
+### 2. Input Validation
+- SQL injection vulnerabilities
+- XSS (Cross-Site Scripting) risks
+- Command injection possibilities
+- Path traversal vulnerabilities
+
+### 3. Data Protection
+- Sensitive data exposure
+- Encryption at rest and in transit
+- API keys and secrets in code
+- Database credential security
+
+### 4. Dependencies
+- Known vulnerabilities in packages
+- Outdated dependencies
+- License compliance issues
+
+### 5. Configuration
+- Security headers (CSP, HSTS, etc.)
+- CORS configuration
+- Error messages leaking information
+- Debug mode in production
+
+**Output Format** - Provide a detailed report with sections:
+- Critical Issues (Fix Immediately)
+- High Priority
+- Medium Priority
+- Low Priority / Recommendations
+- Security Strengths
+- Action Plan (prioritized list of fixes)
+```
+
+**Usage:**
+```bash
+/security-review "authentication and API endpoints"
+```
+
+**Example: API Documentation Generator Skill**
+
+`.claude/skills/api-docs/SKILL.md`:
+```yaml
+---
+name: api-docs
+description: Generate comprehensive API documentation from code. Use when asked to document APIs, create API docs, or generate OpenAPI specs.
+allowed-tools: [Read, Write, Grep, Glob]
+disable-model-invocation: true
+---
+
+# Generate API Documentation
+
+Analyze the codebase and create comprehensive API documentation for: $ARGUMENTS
+
+## Process
+
+### 1. Discovery
+- Find all API routes/endpoints
+- Identify request/response types
+- Note authentication requirements
+- Document query parameters
+
+### 2. Documentation
+For each endpoint, document:
+- Method and path
+- Description
+- Authentication requirements
+- Request body/parameters
+- Response codes and bodies
+- Example requests
+
+### 3. Output
+- Create `/docs/API.md` with full documentation
+- Create `/openapi.yaml` with OpenAPI spec if applicable
+```
+
+**Usage:**
+```bash
+/api-docs "all endpoints"
+/api-docs "authentication routes"
+```
+
+### File References with @ Syntax [OFFICIAL]
+
+Reference files with `@` prefix for quick file inclusion:
+
+```bash
+# Reference single file
+/review-code @src/auth.ts
+
+# Reference multiple files
+/review-code @src/auth.ts @src/api.ts @tests/auth.test.ts
+
+# Works in regular prompts too
+> "Review @src/services/payment.ts for security issues"
+
+# Reference files with skill arguments
+/analyze-file @src/components/UserProfile.tsx
+```
+
+**How @ References Work:**
+- `@filename` automatically expands to include file content
+- Works with both absolute and relative paths
+- Can reference multiple files in one command
+- Files are read and included in context automatically
+- Reduces need to explicitly say "read file X first"
+
+**Use Cases:**
+```bash
+# Code review with context
+> "Compare @src/api/v1.ts and @src/api/v2.ts and list differences"
+
+# Refactoring across files
+> "Make @src/models/User.ts consistent with @src/types/user.d.ts"
+
+# Bug investigation
+> "This error occurs in @src/services/auth.ts, check @logs/error.log for clues"
+
+# Test generation
+> "Generate tests for @src/utils/validator.ts"
+```
+
+**Best Practices:**
+- Use @ references when you know exact file paths
+- Combine with skills for reusable workflows
+- Great for focused analysis of specific files
+- Reduces token usage vs. reading entire directories
+
+### MCP Integration [OFFICIAL]
+
+MCP servers can expose prompts that become invocable skills automatically:
+
+```json
+{
+  "prompts": [
+    {
+      "name": "search-docs",
+      "description": "Search internal documentation",
+      "arguments": [{"name": "query", "description": "Search query"}]
+    }
+  ]
+}
+```
+
+This becomes available as `/search-docs` in Claude Code.
+
+```bash
+# Add MCP server
+claude mcp add github -- gh-mcp
+
+# MCP prompts become skills:
+/github-pr-review      # Review current PR
+/github-issues         # List open issues
+/github-create-pr      # Create PR from current branch
 ```
 
 ### Skill Best Practices [OFFICIAL]
 
 #### 1. Write Clear, Specific Descriptions
 
-The `description` field is critical - it helps Claude decide when to activate:
+The `description` field is critical — it helps Claude decide when to activate:
 
 **Good:**
 ```yaml
@@ -1510,10 +1867,10 @@ description: "Documentation generator"  # Too vague
 Include terms users would naturally say:
 
 ```yaml
-# For security review Skill
+# For security review skill
 description: "Reviews code for security. Use when asked to: review security, audit code, find vulnerabilities, check for exploits, analyze risks."
 
-# For performance optimization Skill
+# For performance optimization skill
 description: "Optimizes code performance. Use when asked to: improve performance, optimize speed, reduce memory usage, make faster, profile code."
 ```
 
@@ -1533,61 +1890,76 @@ allowed-tools: [Read, Write, Edit, WebFetch, WebSearch]
 #### 4. Keep Skills Focused
 
 **Good (focused):**
-- `sql-optimizer` - Optimizes SQL queries only
-- `api-docs-generator` - Generates API documentation
-- `security-scanner` - Finds security issues
+- `sql-optimizer` — Optimizes SQL queries only
+- `api-docs-generator` — Generates API documentation
+- `security-scanner` — Finds security issues
 
 **Bad (too broad):**
-- `database-everything` - Database tasks (too vague)
-- `code-helper` - Helps with code (what kind?)
+- `database-everything` — Too vague
+- `code-helper` — What kind of help?
 
 #### 5. Provide Clear Instructions
 
 Structure your SKILL.md:
-1. **When to Activate** - Clear triggers
-2. **Process** - Step-by-step what to do
-3. **Output Format** - How to present results
-4. **Examples** - Show expected behavior
+1. **When to Activate** — Clear triggers
+2. **Process** — Step-by-step what to do
+3. **Output Format** — How to present results
+4. **Examples** — Show expected behavior
 
-### Discovering and Using Skills [OFFICIAL]
+#### 6. Mind the Context Budget
 
+Skill descriptions are loaded into context so Claude knows what's available. If you have many skills, they may exceed the character budget (2% of context window, fallback 16,000 characters). Run `/context` to check for warnings about excluded skills.
+
+Override the limit with the `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable.
+
+### Troubleshooting Skills [OFFICIAL]
+
+**Skill not triggering:**
+1. Check the description includes keywords users would naturally say
+2. Verify the skill appears when you ask "What skills are available?"
+3. Try rephrasing your request to match the description
+4. Invoke directly with `/skill-name` to confirm it works
+
+**Skill triggers too often:**
+1. Make the description more specific
+2. Add `disable-model-invocation: true` for manual-only invocation
+
+**Claude doesn't see all skills:**
+- Too many skill descriptions may exceed the character budget
+- Run `/context` to check for a warning about excluded skills
+- Set `SLASH_COMMAND_TOOL_CHAR_BUDGET` to a higher value
+
+### Migration: Commands to Skills
+
+Custom slash commands (`.claude/commands/` files) have been merged into the skills system. **Your existing command files keep working unchanged.** Skills are recommended for new work because they support:
+
+- **Supporting files** — Bundle templates, scripts, and reference docs alongside your skill
+- **Invocation control** — Choose whether you, Claude, or both can invoke
+- **Subagent execution** — Run skills in isolated forked contexts
+- **Nested discovery** — Automatic loading from subdirectories (monorepo support)
+
+**Migration path:**
 ```bash
-# List all available Skills
-> "What Skills are available?"
+# Old structure (still works)
+.claude/commands/review.md
 
-# Claude will show all Skills with descriptions
-# Skills activate automatically when relevant
-
-# Explicitly request a Skill
-> "Use the code-reviewer Skill on src/auth.ts"
-
-# Skills work in background
-> "Review security and generate tests"
-# May activate multiple Skills automatically
+# New structure (recommended)
+.claude/skills/review/SKILL.md
 ```
 
-### Skills vs Slash Commands [OFFICIAL]
-
-| Feature | Skills | Slash Commands |
-|---------|--------|----------------|
-| **Invocation** | Automatic (Claude decides) | Manual (you type `/command`) |
-| **Purpose** | Modular capabilities | Workflow templates |
-| **When to Use** | Claude should decide when needed | You want explicit control |
-| **Example** | Security review when analyzing code | `/deploy` to run deployment steps |
-
-**Use Skills when:** You want Claude to intelligently apply capabilities based on context
-
-**Use Slash Commands when:** You have specific workflows you invoke repeatedly
+Both create `/review` and work the same way. If both exist, the skill takes precedence.
 
 **Source:** [Agent Skills](https://code.claude.com/docs/en/skills)
 
 ---
 
-## Slash Commands
+## Built-in Commands
 
-**Slash commands are user-invoked workflow templates stored as Markdown files.**
+**Built-in commands are native CLI commands for managing your Claude Code session.** They are hardcoded into Claude Code and are NOT skills — you cannot customize or override them.
 
-### Built-in Commands [OFFICIAL]
+> **Note:** For custom workflow commands, use [Skills](#skills-system) instead. Built-in commands like `/help` and `/compact` are not available through the Skill tool.
+
+### Command Reference [OFFICIAL]
 
 ```bash
 # Session Management
@@ -1616,7 +1988,7 @@ Structure your SKILL.md:
 
 # Discovery & Debugging
 /bug               # Report bugs (sends conversation to Anthropic)
-/commands          # List all slash commands
+/commands          # List all skills and commands
 /debug             # Troubleshoot session issues [NEW v2.1.30]
 /hooks             # Show configured hooks
 /skills            # List available Skills
@@ -1667,321 +2039,7 @@ Structure your SKILL.md:
 /plan              # Enter plan mode for structured planning
 ```
 
-### Creating Custom Commands [OFFICIAL]
-
-**Command Locations:**
-```bash
-.claude/commands/          # Project commands (shared via git)
-~/.claude/commands/        # Personal commands (just for you)
-```
-
-**Example: Security Review Command**
-
-`.claude/commands/security-review.md`:
-```markdown
----
-name: security-review
-description: Comprehensive security audit of codebase
----
-
-# Security Review: $ARGUMENTS
-
-Perform a thorough security audit focusing on: $ARGUMENTS
-
-## Review Checklist
-
-### 1. Authentication & Authorization
-- Check for weak password policies
-- Verify JWT token validation
-- Review session management
-- Check for broken access control
-
-### 2. Input Validation
-- SQL injection vulnerabilities
-- XSS (Cross-Site Scripting) risks
-- Command injection possibilities
-- Path traversal vulnerabilities
-
-### 3. Data Protection
-- Sensitive data exposure
-- Encryption at rest and in transit
-- API keys and secrets in code
-- Database credential security
-
-### 4. Dependencies
-- Known vulnerabilities in packages
-- Outdated dependencies
-- License compliance issues
-
-### 5. Configuration
-- Security headers (CSP, HSTS, etc.)
-- CORS configuration
-- Error messages leaking information
-- Debug mode in production
-
-**Output Format** - Provide a detailed report with sections:
-- Critical Issues (Fix Immediately)
-- High Priority
-- Medium Priority
-- Low Priority / Recommendations
-- Security Strengths
-- Action Plan (prioritized list of fixes)
-
-**Testing** - After suggesting fixes, offer to create test cases, set up security hooks, and add security documentation.
-```
-
-**Usage:**
-```bash
-/security-review "authentication and API endpoints"
-```
-
-**Example: API Documentation Generator**
-
-`.claude/commands/api-docs.md`:
-```markdown
----
-name: api-docs
-description: Generate comprehensive API documentation
----
-
-# Generate API Documentation
-
-Analyze the codebase and create comprehensive API documentation for: $ARGUMENTS
-
-## Process
-
-### 1. Discovery
-- Find all API routes/endpoints
-- Identify request/response types
-- Note authentication requirements
-- Document query parameters
-
-### 2. Documentation Structure
-
-For each endpoint, document:
-
-```markdown
-### POST /api/users/login
-
-**Description**: Authenticates a user and returns a JWT token
-
-**Authentication**: None (public endpoint)
-
-**Request Body**:
-```json
-{
-  "email": "string (required, format: email)",
-  "password": "string (required, min: 8 chars)"
-}
-```
-
-**Response 200** (Success):
-```json
-{
-  "success": true,
-  "data": {
-    "token": "string (JWT)",
-    "user": {
-      "id": "string",
-      "email": "string",
-      "name": "string"
-    }
-  }
-}
-```
-
-**Response 401** (Unauthorized):
-```json
-{
-  "success": false,
-  "error": "Invalid credentials"
-}
-```
-
-**Example Request**:
-```bash
-curl -X POST https://api.example.com/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"secretpass"}'
-```
-```
-
-### 3. Generate OpenAPI/Swagger Spec
-Create an OpenAPI 3.0 specification file.
-
-### 4. Create Examples
-Provide curl examples and code snippets for common use cases.
-
-## Output
-- Create `/docs/API.md` with full documentation
-- Create `/openapi.yaml` with OpenAPI spec
-- Update README.md with API documentation link
-```
-
-**Usage:**
-```bash
-/api-docs "all endpoints"
-/api-docs "authentication routes"
-```
-
-### Command Features [OFFICIAL]
-
-#### Using Arguments
-
-Commands can accept arguments via `$ARGUMENTS` placeholder:
-
-```markdown
----
-name: analyze-file
-description: Deep analysis of a specific file
----
-
-# Analyze: $ARGUMENTS
-
-Perform a comprehensive analysis of: $ARGUMENTS
-
-Include:
-- Code structure and patterns
-- Potential issues
-- Improvement suggestions
-- Test coverage
-```
-
-**Usage:**
-```bash
-/analyze-file "src/services/payment.ts"
-```
-
-**Indexed Arguments** [NEW v2.1.19]:
-
-Access individual arguments using bracket syntax or shorthand:
-
-```markdown
----
-name: compare-files
-description: Compare two files
----
-
-# Compare: $ARGUMENTS[0] vs $ARGUMENTS[1]
-
-# Shorthand syntax also available:
-# $0 = first argument
-# $1 = second argument
-
-Compare $0 and $1 for differences.
-```
-
-**Usage:**
-```bash
-/compare-files "src/v1/api.ts" "src/v2/api.ts"
-# $0 = "src/v1/api.ts", $1 = "src/v2/api.ts"
-```
-
-#### File References with @ Syntax [OFFICIAL]
-
-Reference files with `@` prefix for quick file inclusion:
-
-```bash
-# Reference single file
-/review-code @src/auth.ts
-
-# Reference multiple files
-/review-code @src/auth.ts @src/api.ts @tests/auth.test.ts
-
-# Works in regular prompts too
-> "Review @src/services/payment.ts for security issues"
-
-# Reference files in commands with arguments
-/analyze-file @src/components/UserProfile.tsx
-```
-
-**How @ References Work:**
-- `@filename` automatically expands to include file content
-- Works with both absolute and relative paths
-- Can reference multiple files in one command
-- Files are read and included in context automatically
-- Reduces need to explicitly say "read file X first"
-
-**Use Cases:**
-```bash
-# Code review with context
-> "Compare @src/api/v1.ts and @src/api/v2.ts and list differences"
-
-# Refactoring across files
-> "Make @src/models/User.ts consistent with @src/types/user.d.ts"
-
-# Bug investigation
-> "This error occurs in @src/services/auth.ts, check @logs/error.log for clues"
-
-# Test generation
-> "Generate tests for @src/utils/validator.ts"
-```
-
-**Best Practices:**
-- Use @ references when you know exact file paths
-- Combine with slash commands for reusable workflows
-- Great for focused analysis of specific files
-- Reduces token usage vs. reading entire directories
-
-#### Namespacing
-
-Organize commands in subdirectories:
-
-```bash
-.claude/commands/
-├── api/
-│   ├── generate-docs.md
-│   └── test-endpoints.md
-├── testing/
-│   ├── run-e2e.md
-│   └── coverage-report.md
-└── deploy/
-    ├── staging.md
-    └── production.md
-```
-
-**Usage:**
-```bash
-/api/generate-docs
-/testing/run-e2e
-/deploy/staging
-```
-
-#### Extended Thinking
-
-Commands can trigger extended reasoning for complex tasks:
-
-```markdown
----
-name: architecture-review
-description: Deep architectural analysis
-extended-thinking: true
----
-
-# Architecture Review
-
-[Claude will use extended thinking to analyze architecture deeply]
-```
-
-#### MCP Integration
-
-MCP servers can expose prompts as slash commands automatically:
-
-```json
-{
-  "prompts": [
-    {
-      "name": "search-docs",
-      "description": "Search internal documentation",
-      "arguments": [{"name": "query", "description": "Search query"}]
-    }
-  ]
-}
-```
-
-This becomes available as `/search-docs` in Claude Code.
-
-**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference)
+**Source:** [CLI Reference](https://code.claude.com/docs/en/cli-reference), [Interactive Mode](https://code.claude.com/docs/en/interactive-mode#built-in-commands)
 
 ---
 
@@ -3459,7 +3517,7 @@ Use hooks to enforce quality gates:
 
 ## Plugins
 
-**Plugins bundle Skills, Commands, Hooks, and MCP servers for easy sharing.**
+**Plugins bundle Skills, Hooks, and MCP servers for easy sharing.**
 
 ### What Are Plugins? [OFFICIAL]
 
@@ -3467,8 +3525,7 @@ Plugins are packages that extend Claude Code:
 
 ```bash
 # A plugin can contain:
-- Skills (auto-activated capabilities)
-- Slash Commands (workflow templates)
+- Skills (capabilities and workflow templates)
 - Hooks (automation)
 - MCP Servers (external integrations)
 - Sub-Agent definitions
@@ -3507,7 +3564,7 @@ Plugins are packages that extend Claude Code:
 my-plugin/
 ├── .claude-plugin/
 │   └── plugin.json          # Metadata
-├── commands/                 # Slash commands
+├── commands/                 # Legacy commands (treated as skills)
 │   └── my-command.md
 ├── skills/                   # Skills
 │   └── my-skill/
@@ -3747,7 +3804,7 @@ TodoWrite todos=[
    - All tests
    - Build process"
 
-# Or create a slash command:
+# Or create a skill:
 /verify-changes
 ```
 
@@ -3775,7 +3832,7 @@ Claude Code's features form a layered automation stack. Understanding how they c
 |---|---------|----------|
 | 1 | [Explore → Plan → Code → Commit](#synergy-1-explore--plan--code--commit-official) | Standard development workflow |
 | 2 | [Test-Driven Development](#synergy-2-test-driven-development-community) | Quality-first coding |
-| 3 | [MCP + Slash Commands](#synergy-3-mcp--slash-commands-official) | External tool integrations |
+| 3 | [MCP + Skills](#synergy-3-mcp--skills-official) | External tool integrations |
 | 4 | [Skills + Hooks](#synergy-4-skills--hooks-auto-apply--enforce-official) | Auto-apply expertise + enforce rules |
 | 5 | [Sub-agents + Background](#synergy-5-sub-agents--background-tasks-official) | Parallel isolated work |
 | 6 | [Multi-Claude Workflows](#synergy-6-multi-claude-workflows-community) | Git worktrees for parallelism |
@@ -3796,13 +3853,12 @@ Each feature serves a distinct purpose and they build on each other:
 | Layer | Feature | Purpose | Invocation |
 |-------|---------|---------|------------|
 | **Connection** | MCP | External tools (GitHub, Jira, DBs) | Automatic when configured |
-| **Capability** | Skills | Domain expertise (testing, security) | Auto-activated by context |
-| **Entry Point** | Slash Commands | Repeatable workflows | Manual via `/command` |
+| **Capability** | Skills | Domain expertise + workflows | Auto-activated or via `/skill-name` |
 | **Enforcement** | Hooks | Quality gates, auto-actions | Lifecycle events |
 | **Isolation** | Sub-agents | Parallel specialized work | Task delegation |
 | **Bundling** | Plugins | Package all of the above | Install once |
 
-**Key insight:** MCP connects external systems. Skills provide automatic expertise. Slash commands give explicit control. Hooks enforce standards. Sub-agents isolate heavy work.
+**Key insight:** MCP connects external systems. Skills provide expertise and workflows (both auto-activated and user-invoked). Hooks enforce standards. Sub-agents isolate heavy work.
 
 ### Synergy 1: Explore → Plan → Code → Commit [OFFICIAL]
 
@@ -3853,9 +3909,9 @@ Use a standard regex pattern. No external dependencies."
 
 **Why it works:** Tests define the contract before implementation. Claude iterates against concrete targets. Git history shows the TDD discipline.
 
-### Synergy 3: MCP + Slash Commands [OFFICIAL]
+### Synergy 3: MCP + Skills [OFFICIAL]
 
-MCP servers expose prompts that become slash commands:
+MCP servers expose prompts that become skills:
 
 ```bash
 # Add MCP server
@@ -3996,7 +4052,7 @@ claude
 
 ### Synergy 7: Context Preservation Across Sessions [COMMUNITY]
 
-Combine CLAUDE.md + slash commands for continuity:
+Combine CLAUDE.md + skills for continuity:
 
 **Project CLAUDE.md:**
 ```markdown
@@ -4017,7 +4073,7 @@ npm test         # Run Jest tests
 npm run db:seed  # Seed test data
 ```
 
-**Slash command for context loading** (`.claude/commands/resume.md`):
+**Skill for context loading** (`.claude/skills/resume/SKILL.md`):
 ```markdown
 ---
 name: resume
@@ -4677,13 +4733,17 @@ Quick decision trees for common scenarios:
 - Never commit directly to main
 ```
 
-**3. Create Workflow Commands**
+**3. Create Workflow Skills**
 ```bash
-# .claude/commands/team/
-├── code-review.md
-├── deploy-staging.md
-├── run-checks.md
-└── security-audit.md
+# .claude/skills/
+├── code-review/
+│   └── SKILL.md
+├── deploy-staging/
+│   └── SKILL.md
+├── run-checks/
+│   └── SKILL.md
+└── security-audit/
+    └── SKILL.md
 ```
 
 **4. Use Hooks for Standards**
