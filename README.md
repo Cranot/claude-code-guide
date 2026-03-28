@@ -5312,6 +5312,7 @@ This caused confusion about what Claude Code actually does vs. conceptual ideas.
 - **GitHub**: https://github.com/anthropics/claude-code
 - **Awesome Claude Code**: https://github.com/hesreallyhim/awesome-claude-code
 - **Awesome Claude Skills**: https://github.com/travisvn/awesome-claude-skills
+- **claude-dash**: https://github.com/krabat-l/claude-dash - Real-time statusline for Claude Code showing context, cost, quota, cache, tools, and git status
 
 ### Getting Help
 - **GitHub Issues**: https://github.com/anthropics/claude-code/issues
